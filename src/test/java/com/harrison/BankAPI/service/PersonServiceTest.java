@@ -1,8 +1,10 @@
 package com.harrison.BankAPI.service;
 
-import static com.harrison.BankAPI.mocks.Mock.personMock;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.harrison.BankAPI.mocks.MockGen;
+import com.harrison.BankAPI.utils.PersonFixtures;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,28 +17,26 @@ public class PersonServiceTest {
   @Autowired
   private PersonService personService;
 
-  private final Person saved = personService.register(personMock());
+  private final MockGen person = PersonFixtures.person_client;
 
-  private final Person person = personMock();
+  private final Person saved = personService.register(person);
 
   @Test
   public void testRegister() {
-    assertEquals(saved.getName(), person.getName());
-    assertEquals(saved.getCpf(), person.getCpf());
-    assertEquals(saved.getEmail(), person.getEmail());
-    assertEquals(saved.getUsername(), person.getUsername());
-    assertEquals(saved.getRole(), person.getRole());
+    person.put("id", saved.getId());
+    MockGen response = new MockGen(saved);
+
+    assertEquals(person, response);
   }
 
   @Test
   public void testGetByCpf() {
     Person founded = personService.getByCpf(saved.getCpf());
 
-    assertEquals(saved.getName(), founded.getName());
-    assertEquals(saved.getCpf(), founded.getCpf());
-    assertEquals(saved.getEmail(), founded.getEmail());
-    assertEquals(saved.getUsername(), founded.getUsername());
-    assertEquals(saved.getRole(), founded.getRole());
+    MockGen expected = new MockGen(saved);
+    MockGen response = new MockGen(founded);
+
+    assertEquals(expected, response);
   }
 
   @Test
@@ -48,11 +48,11 @@ public class PersonServiceTest {
   @Test
   public void testGetById() {
     Person founded = personService.getById(saved.getId());
-    assertEquals(saved.getName(), founded.getName());
-    assertEquals(saved.getCpf(), founded.getCpf());
-    assertEquals(saved.getEmail(), founded.getEmail());
-    assertEquals(saved.getUsername(), founded.getUsername());
-    assertEquals(saved.getRole(), founded.getRole());
+
+    MockGen expected = new MockGen(saved);
+    MockGen response = new MockGen(founded);
+
+    assertEquals(expected, response);
   }
 
   @Test
