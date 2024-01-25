@@ -1,14 +1,12 @@
 package com.harrison.BankAPI.service;
 
-import static com.harrison.BankAPI.mocks.Mock.accountMock;
-import static com.harrison.BankAPI.mocks.Mock.transactionMock1;
-import static com.harrison.BankAPI.mocks.Mock.transactionMock2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Assertions;
+import com.harrison.BankAPI.mocks.MockGen;
+import com.harrison.BankAPI.utils.AccountFixtures;
+import com.harrison.BankAPI.utils.AddressFixtures;
+import com.harrison.BankAPI.utils.BranchFixtures;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,25 +19,32 @@ public class AccountServiceTest {
   @Autowired
   private AccountService accountService;
 
-  private Account account = accountMock();
+  @Autowired
+  private BranchService branchService;
 
-  private Account saved = accountService.createAccount(account);
+  private final Branch branch = branchService.createBranch(BranchFixtures.branch_1);
 
-  private Transaction transaction1 = accountService.createTransaction(transactionMock1());
-
-  private Transaction transaction2 = accountService.createTransaction(transactionMock2());
+  private final Account saved1 = accountService.createAccount(AccountFixtures.account1);
 
   @Test
   public void testCreateAccount() {
-    assertEquals(account.getPerson(), saved.getPerson());
-    assertEquals(account.getSaldo(), saved.getSaldo());
+    MockGen expected = AccountFixtures.account1;
+    expected.put("id", saved1.getId());
+    expected.put("code", saved1.getCode());
+
+    MockGen response = new MockGen(saved1);
+
+    assertEquals(expected, response);
   }
 
   @Test
   public void testGetById() {
-    Account founded = accountService.getById(saved.getId());
-    assertEquals(founded.getSaldo(), saved.getSaldo());
-    assertEquals(founded.getPerson(), saved.getPerson());
+    Account founded = accountService.getById(saved1.getId());
+
+    MockGen expected = new MockGen(saved1);
+    MockGen response = new MockGen(founded);
+
+    assertEquals(expected, response);
   }
 
   @Test
@@ -50,9 +55,12 @@ public class AccountServiceTest {
 
   @Test
   public void testGetByCode() {
-    Account founded = accountService.getByCode(saved.getCode());
-    assertEquals(founded.getPerson(), saved.getPerson());
-    assertEquals(founded.getSaldo(), saved.getSaldo());
+    Account founded = accountService.getByCode(saved1.getCode());
+
+    MockGen expected = new MockGen(saved1);
+    MockGen response = new MockGen(founded);
+
+    assertEquals(expected, response);
   }
 
   @Test
@@ -62,51 +70,50 @@ public class AccountServiceTest {
   }
 
   @Test
-  public void testCreateTransaction() {
-    assertEquals(transaction1.getName(), transactionMock1().getName());
-    assertEquals(transaction1.getValor(), transactionMock1().getValor());
-    assertEquals(transaction1.getAccount(), transactionMock1().getAccount());
-    assertEquals(transaction2.getName(), transactionMock2().getName());
-    assertEquals(transaction2.getValor(), transactionMock2().getValor());
-    assertEquals(transaction2.getAccount(), transactionMock2().getAccount());
+  public void testUpdateAccount() {
+    Account founded = accountService.getById(saved1.getId());
+    founded.setName("Moacir Antunes");
+    founded.setPassword("abcde");
+    founded.setEmail("moacir.antunes@gmail.com");
+    founded.setUsername("moacirantunes");
+    Account updated = accountService.updateAccount(saved1.getId(), founded);
+
+    MockGen expected = new MockGen(founded);
+    MockGen response = new MockGen(updated);
+
+    assertEquals(expected, response);
   }
 
   @Test
-  public void testGetTransactionById() {
-    Transaction founded = accountService.getTransactionById(account.getId(), transaction1.getId());
+  public void testDeleteAccount() {
+    Account saved = accountService.createAccount(AccountFixtures.account3);
 
-    assertEquals(founded.getName(), transaction1.getName());
-    assertEquals(founded.getValor(), transaction1.getValor());
-    assertEquals(founded.getCode(), transaction1.getCode());
-    assertEquals(founded.getAccount(), transaction1.getAccount());
-  }
+    String message = accountService.deleteAccount(saved.getId());
 
-  @Test
-  public void testGetTransactionByIdNotFound() {
+    assertEquals("Conta excluída com sucesso!", message);
     assertThrows(IdNotFoundException.class, () ->
-        accountService.getTransactionById(account.getId(), 100L));
+        accountService.getById(saved.getId()));
   }
 
   @Test
-  public void testGetTransactionByCode() {
-    Transaction founded = accountService.getTransactionByCode(account.getId(), transaction1.getCode());
+  public void testSetAdress() {
+    MockGen address = AddressFixtures.client_address1;
+    Account saved = accountService.setAddress(1L, address);
 
-    assertEquals(founded.getName(), transaction1.getName());
-    assertEquals(founded.getValor(), transaction1.getValor());
-    assertEquals(founded.getId(), transaction1.getId());
-    assertEquals(founded.getAccount(), transaction1.getAccount());
+    saved1.setAddress(address);
+    address.setId(saved.getId());
+
+    MockGen expected = new MockGen(saved1);
+    MockGen response = new MockGen(saved);
+    assertEquals(expected, response);
   }
 
   @Test
-  public void testGetTransactionByCodeNotFound() {
-    assertThrows(CodeNotFoundException.class, () ->
-        accountService.getTransactionByCode(account.getId(), "S-0000-00000"));
+  public void testSetAddressNotFoundAccountId() {
+    MockGen address = AddressFixtures.client_address1;
+
+    assertThrows(IdNotFoundException.class, () ->
+        accountService.createAddress(100L, address));
   }
 
-  @Test
-  public void testGetAllTransactions() {
-    List<Transaction> transactionList = accountService.getAllTransactions(account.getId());
-
-    MatcherAssert.assertThat(account.getTransactions(), CoreMatchers.is(transactionList));
-  }
 }
