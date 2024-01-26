@@ -1,9 +1,13 @@
 package com.harrison.BankAPI.service;
 
+import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.harrison.BankAPI.exception.NotFoundException;
 import com.harrison.BankAPI.mocks.MockGen;
+import com.harrison.BankAPI.models.entity.Person;
 import com.harrison.BankAPI.utils.PersonFixtures;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,29 +23,33 @@ public class PersonServiceTest {
 
   private final MockGen person = PersonFixtures.person_client;
 
-  private final Person saved = personService.register(person);
+  private final Person saved = personService.register(person.toPerson());
+
+  public PersonServiceTest() throws JsonProcessingException {
+  }
 
   @Test
   public void testRegister() {
+    String response = objectToJson(saved);
     person.put("id", saved.getId());
-    MockGen response = new MockGen(saved);
+    String expect = objectToJson(person);
 
-    assertEquals(person, response);
+    assertEquals(expect, response);
   }
 
   @Test
   public void testGetByCpf() {
     Person founded = personService.getByCpf(saved.getCpf());
 
-    MockGen expected = new MockGen(saved);
-    MockGen response = new MockGen(founded);
+    String expected = objectToJson(saved);
+    String response = objectToJson(founded);
 
     assertEquals(expected, response);
   }
 
   @Test
   public void testGetByCpfNotFound() {
-    assertThrows(CpfNotFoundException.class, () ->
+    assertThrows(NotFoundException.class, () ->
         personService.getByCpf("87654321"));
   }
 
@@ -49,15 +57,15 @@ public class PersonServiceTest {
   public void testGetById() {
     Person founded = personService.getById(saved.getId());
 
-    MockGen expected = new MockGen(saved);
-    MockGen response = new MockGen(founded);
+    String expected = objectToJson(saved);
+    String response = objectToJson(founded);
 
     assertEquals(expected, response);
   }
 
   @Test
   public void testGetByIdNotFound() {
-    assertThrows(IdNotFoundException.class, () ->
+    assertThrows(NotFoundException.class, () ->
         personService.getById(100L));
   }
 }
