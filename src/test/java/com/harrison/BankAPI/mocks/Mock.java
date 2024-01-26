@@ -1,5 +1,7 @@
 package com.harrison.BankAPI.mocks;
 
+import com.harrison.BankAPI.models.entity.Person;
+
 public class Mock {
 
   public static Person personMock1() {
