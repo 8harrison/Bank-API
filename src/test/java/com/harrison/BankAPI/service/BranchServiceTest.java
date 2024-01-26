@@ -1,9 +1,13 @@
 package com.harrison.BankAPI.service;
 
+import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.harrison.BankAPI.exception.NotFoundException;
 import com.harrison.BankAPI.mocks.MockGen;
+import com.harrison.BankAPI.models.entity.Branch;
 import com.harrison.BankAPI.utils.AddressFixtures;
 import com.harrison.BankAPI.utils.BranchFixtures;
 import java.util.HashSet;
@@ -21,7 +25,7 @@ public class BranchServiceTest {
   BranchService branchService;
 
   @Test
-  public void test() {
+  public void test() throws JsonProcessingException {
     testCreateBranch();
     testGetById();
     testGetByIdNotFound();
@@ -34,44 +38,41 @@ public class BranchServiceTest {
     testSetAddressBranchNotFound();
   }
 
-  private void testCreateBranch() {
-    MockGen expected = BranchFixtures.branch_1;
-    Branch branch = branchService.create(expected);
-    expected.put("id", branch.getId());
-    MockGen response = new MockGen(branch);
-
+  private void testCreateBranch() throws JsonProcessingException {
+    MockGen branch = BranchFixtures.branch_1;
+    Branch created = branchService.create(branch.toBranch());
+    branch.put("id", created.getId());
+    String response = objectToJson(created);
+    String expected = objectToJson(branch);
     assertEquals(expected, response);
   }
 
-  private void testGetById() {
-    Branch branch = branchService.create(BranchFixtures.branch_2);
+  private void testGetById() throws JsonProcessingException {
+    Branch branch = branchService.create(BranchFixtures.branch_2.toBranch());
     Branch founded = branchService.getById(branch.getId());
 
-    MockGen expected = new MockGen(branch);
-    MockGen response = new MockGen(founded);
+    String expected = objectToJson(branch);
+    String response = objectToJson(founded);
 
     assertEquals(expected, response);
   }
 
   private void testGetByIdNotFound() {
-    assertThrows(IdNotFoundException.class, () ->
+    assertThrows(NotFoundException.class, () ->
         branchService.getById(100L));
   }
 
-  private void testGetAll() {
-    Branch created = branchService.create(BranchFixtures.branch_3);
+  private void testGetAll() throws JsonProcessingException {
+    Branch created = branchService.create(BranchFixtures.branch_3.toBranch());
     MockGen branch1 = BranchFixtures.branch_1;
     MockGen branch2 = BranchFixtures.branch_2;
-    MockGen branch3 = new MockGen(created);
+    MockGen branch3 = MockGen.toMockGen(objectToJson(created));
     branch1.put("id", 1L);
     branch2.put("id", 2L);
     Set<MockGen> expected = Set.of(branch1, branch2, branch3);
-    Set<MockGen> response = new HashSet<>();
-    for (Branch branch : branchService.getAll()) {
-      response.add(new MockGen(branch));
-    }
+    Set<Branch> response = new HashSet<>(branchService.getAll());
 
-    assertEquals(expected, response);
+    assertEquals(objectToJson(expected), objectToJson(response));
   }
 
   private void testUpdate() {
@@ -79,15 +80,15 @@ public class BranchServiceTest {
     founded.setName("Agência da Praça da Igreja da Matriz");
     Branch updated = branchService.update(1L, founded);
 
-    MockGen expected = new MockGen(founded);
-    MockGen response = new MockGen(updated);
+    String expected = objectToJson(founded);
+    String response = objectToJson(updated);
 
     assertEquals(expected, response);
   }
 
   private void testUpdateNotFound() {
     Branch branch = branchService.getById(1L);
-    assertThrows(IdNotFoundException.class, () ->
+    assertThrows(NotFoundException.class, () ->
         branchService.update(100L, branch));
   }
 
@@ -95,29 +96,29 @@ public class BranchServiceTest {
     String response = branchService.delete(3L);
     String expected = "Agência excluída com sucesso!";
     assertEquals(expected, response);
-    assertThrows(IdNotFoundException.class, () ->
+    assertThrows(NotFoundException.class, () ->
         branchService.getById(3L));
   }
 
   private void testDeleteNotFound() {
-    assertThrows(IdNotFoundException.class, () ->
+    assertThrows(NotFoundException.class, () ->
         branchService.delete(100L));
   }
 
-  private void testSetAddress() {
+  private void testSetAddress() throws JsonProcessingException {
     MockGen address = AddressFixtures.branch_address1;
     Branch founded = branchService.getById(1L);
-    Branch branch = branchService.setAddress(1L, address);
-    founded.setAddress(address);
-    MockGen expected = new MockGen(founded);
-    MockGen response = new MockGen(branch);
+    Branch branch = branchService.setAddress(1L, address.toAddress());
+    founded.setAddress(address.toAddress());
+    String expected = objectToJson(founded);
+    String response = objectToJson(branch);
 
     assertEquals(expected, response);
   }
 
   private void testSetAddressBranchNotFound() {
-    assertThrows(IdNotFoundException.class, () ->
-        branchService.saveAddress(100L, AddressFixtures.branch_address1));
+    assertThrows(NotFoundException.class, () ->
+        branchService.setAddress(100L, AddressFixtures.branch_address1.toAddress()));
   }
 
 }
