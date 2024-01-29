@@ -1,13 +1,21 @@
 package com.harrison.BankAPI.models.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
@@ -37,15 +45,18 @@ public class Person implements UserDetails {
 
   private String role;
 
-  @OneToOne
-  @JsonIgnore
+  @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
   private Account account;
+
+  @ManyToMany(mappedBy = "people")
+  @JsonIgnore
+  private List<Branch> branches;
 
   public Person() {
   }
 
   public Person(Long id, String name, String email, String cpf, String username, String password,
-      String role, Account account) {
+      String role, List<Branch> branches, Account account) {
     this.id = id;
     this.name = name;
     this.email = email;
@@ -53,7 +64,16 @@ public class Person implements UserDetails {
     this.username = username;
     this.password = password;
     this.role = role;
+    this.branches = branches;
     this.account = account;
+  }
+
+  public List<Branch> getBranches() {
+    return branches;
+  }
+
+  public void setBranches(List<Branch> branches) {
+    this.branches = branches;
   }
 
   public Account getAccount() {

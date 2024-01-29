@@ -1,14 +1,14 @@
 package com.harrison.BankAPI.models.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.util.Map;
 
 @Entity
 @Table(name = "transactions")
@@ -22,11 +22,12 @@ public class Transaction {
 
   private Double valor;
 
-  @ManyToOne
-  @JsonIgnore
-  private Account account;
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "account_id")
+  private Account titular;
 
-  private Map<String, Account> accountMap;
+  @ManyToOne
+  private Account recebedor;
 
   @Column(unique = true)
   private String code;
@@ -34,13 +35,19 @@ public class Transaction {
   public Transaction() {
   }
 
-  public Transaction(Long id, String name, Double valor, Account account,
-      Map<String, Account> accountMap) {
+  public Transaction(Long id, String name, Double valor, Account titular) {
     this.id = id;
     this.name = name;
     this.valor = valor;
-    this.account = account;
-    this.accountMap = accountMap;
+    this.titular = titular;
+  }
+
+  public Transaction(Long id, String name, Double valor, Account titular, Account recebedor) {
+    this.id = id;
+    this.name = name;
+    this.valor = valor;
+    this.titular = titular;
+    this.recebedor = recebedor;
   }
 
   public String getCode() {
@@ -75,20 +82,19 @@ public class Transaction {
     this.valor = valor;
   }
 
-  public Account getAccount() {
-    return account;
+  public Account getTitular() {
+    return titular;
   }
 
-  public void setAccount(Account account) {
-    this.account = account;
+  public void setTitular(Account titular) {
+    this.titular = titular;
   }
 
-  public Map<String, Account> getAccountMap() {
-    return accountMap;
+  public Account getRecebedor() {
+    return recebedor;
   }
 
-  public void setAccountMap(
-      Map<String, Account> accountMap) {
-    this.accountMap = accountMap;
+  public void setRecebedor(Account recebedor) {
+    this.recebedor = recebedor;
   }
 }

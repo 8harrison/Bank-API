@@ -1,13 +1,19 @@
 package com.harrison.BankAPI.models.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -18,10 +24,13 @@ public class Account {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @OneToOne(mappedBy = "account")
+  @OneToOne
+  @JoinColumn(name = "person_id")
+  @JsonIgnore
   private Person person;
 
-  @OneToMany(mappedBy = "accounts")
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "branch_id")
   private Branch branch;
 
   private String name;
@@ -31,19 +40,22 @@ public class Account {
   @Column(unique = true)
   private String code;
 
-  @OneToMany(mappedBy = "account")
-  private List<Transaction> transactions;
+  @OneToMany(mappedBy = "titular", fetch = FetchType.EAGER)
+  @JsonIgnore
+  private List<Transaction> transactions = new ArrayList<>();
+
+  @OneToOne(mappedBy = "account", cascade = CascadeType.ALL)
+  private Address address;
 
   public Account() {
   }
 
-  public Account(Long id, Person person, Branch branch, String name, Double saldo, String code) {
+  public Account(Long id, Person person, String name, Double saldo, Address address) {
     this.id = id;
     this.person = person;
-    this.branch = branch;
     this.name = name;
     this.saldo = saldo;
-    this.code = code;
+    this.address = address;
   }
 
   public List<Transaction> getTransactions() {
@@ -100,5 +112,13 @@ public class Account {
 
   public void setSaldo(Double saldo) {
     this.saldo = saldo;
+  }
+
+  public Address getAddress() {
+    return address;
+  }
+
+  public void setAddress(Address address) {
+    this.address = address;
   }
 }

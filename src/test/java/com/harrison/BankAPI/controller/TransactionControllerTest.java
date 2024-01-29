@@ -2,10 +2,6 @@ package com.harrison.BankAPI.controller;
 
 import static com.harrison.BankAPI.utils.TestHelpers.getValidateToken;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
-import static com.harrison.BankAPI.utils.TestHelpers.performCreation;
-import static com.harrison.BankAPI.utils.TestHelpers.performDelete;
-import static com.harrison.BankAPI.utils.TestHelpers.performNotFound;
-import static com.harrison.BankAPI.utils.TestHelpers.performfind;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -13,7 +9,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.harrison.BankAPI.mocks.MockGen;
+import com.harrison.BankAPI.models.entity.Account;
+import com.harrison.BankAPI.service.AccountService;
 import com.harrison.BankAPI.utils.AccountFixtures;
+import com.harrison.BankAPI.utils.TestHelpers;
 import com.harrison.BankAPI.utils.TransactionFixtures;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,6 +29,8 @@ public class TransactionControllerTest {
   @Autowired
   AccountService accountService;
 
+  TestHelpers aux = new TestHelpers();
+
   @Test
   public void testCreateTransaction() throws Exception {
     testDeposito();
@@ -41,7 +42,7 @@ public class TransactionControllerTest {
 
   @Test
   public void testgetAllTransactions() throws Exception {
-    performCreation(AccountFixtures.account1);
+    aux.performCreation(AccountFixtures.account1);
 
     Set<MockGen> transactions = Set.of(
         TransactionFixtures.transaction_deposito,
@@ -53,12 +54,12 @@ public class TransactionControllerTest {
     Set<MockGen> expectedTransactions = new HashSet<>();
 
     for (MockGen transaction : transactions) {
-      MockGen savedTransaction = performCreation(transaction, "/accounts/1/transactions");
+      MockGen savedTransaction = aux.performCreation(transaction, "/accounts/1/transactions");
       expectedTransactions.add(savedTransaction);
     }
 
     String expected = objectToJson(expectedTransactions);
-    String returnedTransactions = performfind("/accounts/1/transactions");
+    String returnedTransactions = aux.performfind("/accounts/1/transactions");
 
     assertEquals(expected, returnedTransactions);
 
@@ -72,32 +73,32 @@ public class TransactionControllerTest {
 
     String message = "Conta não encontrada!";
 
-    performNotFound(builder, message);
+    aux.performNotFound(builder, message);
 
   }
 
   @Test
   public void testGetTransactionById() throws Exception {
-    performCreation(AccountFixtures.account1);
-    MockGen transaction = performCreation(TransactionFixtures.transaction_deposito,
+    aux.performCreation(AccountFixtures.account1);
+    MockGen transaction = aux.performCreation(TransactionFixtures.transaction_deposito,
         "/accounts/1/transactions");
 
     String expected = objectToJson(transaction);
-    String returnedTransaction = performfind("/accounts/1/transactions/1");
+    String returnedTransaction = aux.performfind("/accounts/1/transactions/1");
 
     assertEquals(expected, returnedTransaction);
   }
 
   @Test
   public void testGetTransactionByIdNotFound() throws Exception {
-    MockGen account = performCreation(AccountFixtures.account1);
+    MockGen account = aux.performCreation(AccountFixtures.account1);
     MockHttpServletRequestBuilder builder = get(
         "/accounts/" + account.get("id") + "/transactions/100");
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
 
     String message = "Transação não encontrada";
 
-    performNotFound(builder, message);
+    aux.performNotFound(builder, message);
 
   }
 
@@ -109,32 +110,32 @@ public class TransactionControllerTest {
 
     String message = "Conta não encontrada!";
 
-    performNotFound(builder, message);
+    aux.performNotFound(builder, message);
 
   }
 
   @Test
   public void testGetTransactionByCode() throws Exception {
-    performCreation(AccountFixtures.account1);
-    MockGen transaction = performCreation(TransactionFixtures.transaction_deposito,
+    aux.performCreation(AccountFixtures.account1);
+    MockGen transaction = aux.performCreation(TransactionFixtures.transaction_deposito,
         "/accounts/1/transactions");
 
     String expected = objectToJson(transaction);
-    String returnedTransaction = performfind("/accounts/1/transactions?code=" + transaction.get("code"));
+    String returnedTransaction = aux.performfind("/accounts/1/transactions?code=" + transaction.get("code"));
 
     assertEquals(expected, returnedTransaction);
   }
 
   @Test
   public void testGetTransactionByCodeNotFound() throws Exception {
-    MockGen account = performCreation(AccountFixtures.account1);
+    MockGen account = aux.performCreation(AccountFixtures.account1);
     MockHttpServletRequestBuilder builder = get(
         "/accounts/" + account.get("id") + "/transactions?code=0000-d");
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
 
     String message = "Transação não encontrada";
 
-    performNotFound(builder, message);
+    aux.performNotFound(builder, message);
 
   }
 
@@ -146,39 +147,39 @@ public class TransactionControllerTest {
 
     String message = "Conta não encontrada!";
 
-    performNotFound(builder, message);
+    aux.performNotFound(builder, message);
 
   }
 
   @Test
   public void testDeleteTransaction() throws Exception {
-    MockGen account1 = performCreation(AccountFixtures.account1);
-    MockGen transaction = performCreation(TransactionFixtures.transaction_transferencia,
+    MockGen account1 = aux.performCreation(AccountFixtures.account1);
+    MockGen transaction = aux.performCreation(TransactionFixtures.transaction_transferencia,
         "/accounts/1/transactions");
     Object destinatarioId = transaction.get("contaDestinoId");
-    MockGen account2 = accountService.getById(destinatarioId);
+    Account account2 = accountService.getById((Long) destinatarioId);
 
     MockHttpServletRequestBuilder builder = delete(
-        "/accounts/" + account1.get("id") + "/transactions/" + transaction.get("id"));
+        "/accounts/" + destinatarioId + "/transactions/" + transaction.get("id"));
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
     String message = "Transação excluída com sucesso!";
 
-    performDelete(builder, message);
+    aux.performDelete(builder, message);
 
     assertEquals(1000.00, account1.get("saldo"));
-    assertEquals(1000.00, account2.get("saldo"));
+    assertEquals(1000.00, account2.getSaldo());
   }
 
   @Test
   public void testDeleteTransactionByIdNotFound() throws Exception {
-    MockGen account = performCreation(AccountFixtures.account1);
+    MockGen account = aux.performCreation(AccountFixtures.account1);
     MockHttpServletRequestBuilder builder = delete(
         "/accounts/" + account.get("id") + "/transactions/100");
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
 
     String message = "Transação não encontrada!";
 
-    performNotFound(builder, message);
+    aux.performNotFound(builder, message);
 
   }
 
@@ -190,13 +191,13 @@ public class TransactionControllerTest {
 
     String message = "Conta não encontrada!";
 
-    performNotFound(builder, message);
+    aux.performNotFound(builder, message);
 
   }
 
   private void testDeposito() throws Exception {
-    MockGen account = performCreation(AccountFixtures.account1);
-    MockGen savedtransaction = performCreation(TransactionFixtures.transaction_deposito,
+    MockGen account = aux.performCreation(AccountFixtures.account1);
+    MockGen savedtransaction = aux.performCreation(TransactionFixtures.transaction_deposito,
         "/accounts/1/transactions");
     MockGen transaction = TransactionFixtures.transaction_deposito;
 
@@ -210,8 +211,8 @@ public class TransactionControllerTest {
   }
 
   private void testSaque() throws Exception {
-    MockGen account = performCreation(AccountFixtures.account1);
-    MockGen savedtransaction = performCreation(TransactionFixtures.transaction_saque,
+    MockGen account = aux.performCreation(AccountFixtures.account1);
+    MockGen savedtransaction = aux.performCreation(TransactionFixtures.transaction_saque,
         "/accounts/1/transactions");
     MockGen transaction = TransactionFixtures.transaction_saque;
 
@@ -225,9 +226,9 @@ public class TransactionControllerTest {
   }
 
   private void testTransferencia() throws Exception {
-    MockGen account1 = performCreation(AccountFixtures.account1);
-    MockGen account2 = performCreation(AccountFixtures.account2);
-    MockGen savedtransaction = performCreation(TransactionFixtures.transaction_transferencia,
+    MockGen account1 = aux.performCreation(AccountFixtures.account1);
+    MockGen account2 = aux.performCreation(AccountFixtures.account2);
+    MockGen savedtransaction = aux.performCreation(TransactionFixtures.transaction_transferencia,
         "/accounts/1/transactions");
     MockGen transaction = TransactionFixtures.transaction_transferencia;
 
@@ -242,9 +243,9 @@ public class TransactionControllerTest {
   }
 
   private void testPix() throws Exception {
-    MockGen account1 = performCreation(AccountFixtures.account1);
-    MockGen account2 = performCreation(AccountFixtures.account2);
-    MockGen savedtransaction = performCreation(TransactionFixtures.transaction_pix,
+    MockGen account1 = aux.performCreation(AccountFixtures.account1);
+    MockGen account2 = aux.performCreation(AccountFixtures.account2);
+    MockGen savedtransaction = aux.performCreation(TransactionFixtures.transaction_pix,
         "/accounts/1/transactions");
     MockGen transaction = TransactionFixtures.transaction_pix;
 
@@ -259,14 +260,14 @@ public class TransactionControllerTest {
   }
 
   private void testCreateTransactionAccountIdNotFound() throws Exception {
-    MockGen account = performCreation(AccountFixtures.account1);
+    MockGen account = aux.performCreation(AccountFixtures.account1);
     MockHttpServletRequestBuilder builder = post(
         "/accounts/100/transactions/1");
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
 
     String message = "Conta não encontrada!";
 
-    performNotFound(builder, message);
+    aux.performNotFound(builder, message);
 
   }
 }

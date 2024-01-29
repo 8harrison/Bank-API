@@ -1,40 +1,52 @@
 package com.harrison.BankAPI.service;
 
+import static com.harrison.BankAPI.mocks.MockFactory.mockPerson;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.harrison.BankAPI.exception.NotFoundException;
-import com.harrison.BankAPI.mocks.MockGen;
 import com.harrison.BankAPI.models.entity.Person;
-import com.harrison.BankAPI.utils.PersonFixtures;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class PersonServiceTest {
 
   @Autowired
   private PersonService personService;
 
-  private final MockGen person = PersonFixtures.person_client;
+  Person person;
 
-  private final Person saved = personService.register(person.toPerson());
+  Person saved;
 
-  public PersonServiceTest() throws JsonProcessingException {
+  @BeforeEach
+  public void setup() {
+    person = mockPerson();
+    System.out.println(objectToJson(personService.getAll()));
+    saved = personService.register(person);
+
   }
 
   @Test
   public void testRegister() {
     String response = objectToJson(saved);
-    person.put("id", saved.getId());
+    person.setId(saved.getId());
+    person.setPassword(saved.getPassword());
     String expect = objectToJson(person);
 
     assertEquals(expect, response);
+
   }
 
   @Test

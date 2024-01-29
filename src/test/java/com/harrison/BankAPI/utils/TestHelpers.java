@@ -11,13 +11,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harrison.BankAPI.mocks.MockGen;
-import com.harrison.BankAPI.models.entity.Person;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,43 +22,34 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @Component
-@AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@Execution(ExecutionMode.CONCURRENT)
 public class TestHelpers implements ApplicationContextAware {
 
-  private static ObjectMapper objectMapper;
+  @Autowired
+  static ObjectMapper objectMapper;
 
-  static MockMvc mockMvc;
+  MockMvc mockMvc;
 
   @Autowired
   WebApplicationContext wac;
 
   static String validateToken;
 
-  static {
-    try {
-      validateToken = createPersonAuthenticate(PersonFixtures.person_admin);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   @BeforeEach
-  public void setup() {
+  public void setup() throws Exception {
     mockMvc = MockMvcBuilders
         .webAppContextSetup(wac)
         .apply(springSecurity())
         .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
         .alwaysDo(new SimpleResultHandler())
         .build();
+
+    validateToken = createPersonAuthenticate(PersonFixtures.person_admin);
   }
 
   @Override
@@ -81,7 +69,7 @@ public class TestHelpers implements ApplicationContextAware {
     }
   }
 
-  public static MockGen performCreation(MockGen mockGen, String url) throws Exception {
+  public MockGen performCreation(MockGen mockGen, String url) throws Exception {
     MockHttpServletRequestBuilder builder = post(url);
     builder = builder.header("Authorization", "Bearer " + validateToken);
     String responseContent =
@@ -95,7 +83,7 @@ public class TestHelpers implements ApplicationContextAware {
     return objectMapper.readValue(responseContent, MockGen.class);
   }
 
-  public static MockGen performCreation(MockGen mockGen) throws Exception {
+  public MockGen performCreation(MockGen mockGen) throws Exception {
     MockHttpServletRequestBuilder builder = post("/accounts");
     builder = builder.header("Authorization", "Bearer " + validateToken);
     String responseContent =
@@ -109,7 +97,7 @@ public class TestHelpers implements ApplicationContextAware {
     return objectMapper.readValue(responseContent, MockGen.class);
   }
 
-  public static String performfind(String url) throws Exception {
+  public String performfind(String url) throws Exception {
     MockHttpServletRequestBuilder builder = get(url);
     builder = builder.header("Authorization", "Bearer " + validateToken);
     return mockMvc.perform(builder
@@ -119,7 +107,7 @@ public class TestHelpers implements ApplicationContextAware {
         .andReturn().getResponse().getContentAsString();
   }
 
-  public static MockGen performUpdate(MockHttpServletRequestBuilder builder, MockGen mockGen)
+  public MockGen performUpdate(MockHttpServletRequestBuilder builder, MockGen mockGen)
       throws Exception {
     String responseContent =
         mockMvc.perform(builder
@@ -131,7 +119,7 @@ public class TestHelpers implements ApplicationContextAware {
     return objectMapper.readValue(responseContent, MockGen.class);
   }
 
-  public static void performDelete(MockHttpServletRequestBuilder builder, String message)
+  public void performDelete(MockHttpServletRequestBuilder builder, String message)
       throws Exception {
     mockMvc.perform(builder
             .contentType(MediaType.APPLICATION_JSON))
@@ -140,7 +128,7 @@ public class TestHelpers implements ApplicationContextAware {
         .andExpect(jsonPath("$").value(message));
   }
 
-  public static void performNotFound(MockHttpServletRequestBuilder builder, String message)
+  public void performNotFound(MockHttpServletRequestBuilder builder, String message)
       throws Exception {
     builder = builder.header("Authorization", "Bearer " + validateToken);
     mockMvc.perform(builder
@@ -161,7 +149,7 @@ public class TestHelpers implements ApplicationContextAware {
     return parts.length == 3;
   }
 
-  public static String createPersonAuthenticate(MockGen person) throws Exception {
+  public String createPersonAuthenticate(MockGen person) throws Exception {
     performCreation(person, "auth/register");
 
     Map<String, Object> loginInfo = Map.of(

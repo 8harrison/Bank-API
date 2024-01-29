@@ -1,20 +1,25 @@
 package com.harrison.BankAPI.mocks;
 
-import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harrison.BankAPI.models.entity.Account;
 import com.harrison.BankAPI.models.entity.Branch;
 import com.harrison.BankAPI.models.entity.Person;
 import com.harrison.BankAPI.models.entity.Transaction;
-import com.harrison.BankAPI.utils.Address;
+import com.harrison.BankAPI.models.entity.Address;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MockGen extends HashMap<String, Object> {
 
-  private static ObjectMapper objectMapper;
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   public <K, V> MockGen() {
     super();
@@ -28,32 +33,49 @@ public class MockGen extends HashMap<String, Object> {
     return new MockGen(this);
   }
 
-  public Person toPerson() throws JsonProcessingException {
-    String json = objectToJson(this);
-    return objectMapper.readValue(json, Person.class);
+  public Account toAccount() throws NoSuchFieldException, IllegalAccessException {
+    Account account = new Account();
+    Class<?> fields = Account.class;
+    for (String value : this.keySet()) {
+      Field field = fields.getDeclaredField(value);
+      field.setAccessible(true);
+      field.set(account, this.get(value));
+    }
+    return account;
   }
 
-  public Account toAccount() throws JsonProcessingException {
-    String json = objectToJson(this);
-    return objectMapper.readValue(json, Account.class);
+  public Transaction toTransaction() {
+    return objectMapper.convertValue(this, Transaction.class);
   }
 
-  public Transaction toTransaction() throws JsonProcessingException {
-    String json = objectToJson(this);
-    return objectMapper.readValue(json, Transaction.class);
-  }
+  public Branch toBranch() throws IllegalAccessException, NoSuchFieldException {
+    Branch branch = new Branch();
+    Class<?> fields = Branch.class;
+    for (String value : this.keySet()) {
+      Field field = fields.getDeclaredField(value);
+      field.setAccessible(true);
+      field.set(branch, this.get(value));
+    }
+    return branch;
+}
 
-  public Branch toBranch() throws JsonProcessingException {
-    String json = objectToJson(this);
-    return objectMapper.readValue(json, Branch.class);
-  }
+public Address toAddress() {
+  return objectMapper.convertValue(this, Address.class);
+}
 
-  public Address toAddress() throws JsonProcessingException {
-    String json = objectToJson(this);
-    return objectMapper.readValue(json, Address.class);
-  }
+public static MockGen toMockGen(Object object) {
+  return objectMapper.convertValue(object, MockGen.class);
+}
 
-  public static MockGen toMockGen(String json) throws JsonProcessingException {
-    return objectMapper.readValue(json, MockGen.class);
+public Person toPerson()
+    throws NoSuchFieldException, IllegalAccessException {
+  Person person = new Person();
+  Class<?> fields = Person.class;
+  for (String value : this.keySet()) {
+    Field field = fields.getDeclaredField(value);
+    field.setAccessible(true);
+    field.set(person, this.get(value));
   }
+  return person;
+}
 }

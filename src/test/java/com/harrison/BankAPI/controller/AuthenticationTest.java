@@ -1,6 +1,5 @@
 package com.harrison.BankAPI.controller;
 
-import static com.harrison.BankAPI.utils.TestHelpers.createPersonAuthenticate;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harrison.BankAPI.mocks.MockGen;
 import com.harrison.BankAPI.utils.PersonFixtures;
 import com.harrison.BankAPI.utils.SimpleResultHandler;
+import com.harrison.BankAPI.utils.TestHelpers;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +43,8 @@ public class AuthenticationTest {
   @Autowired
   ObjectMapper objectMapper;
 
+  TestHelpers aux = new TestHelpers();
+
   @BeforeEach
   public void setup() {
     this.mockMvc = MockMvcBuilders
@@ -59,7 +61,7 @@ public class AuthenticationTest {
     performPersonCreation(person);
 
     testLoginFail(person);
-    createPersonAuthenticate(person);
+    aux.createPersonAuthenticate(person);
   }
 
   private void testLoginFail(MockGen person) throws Exception {

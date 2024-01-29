@@ -6,11 +6,11 @@ import java.util.Map;
 public class PersonFixtures {
 
   public final static MockGen person_client = new MockGen(Map.of(
+      "name", "Moacir Pitagoras",
+      "email", "moacir.pit@hotmail.com",
+      "cpf", "12345678",
       "username", "MoacirPitagoras",
       "password", "54321",
-      "cpf", "12345678",
-      "email", "moacir.pit@hotmail.com",
-      "name", "Moacir Pitagoras",
       "role", "CLIENT"
   ));
 
