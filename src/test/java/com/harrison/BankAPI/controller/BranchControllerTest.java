@@ -10,6 +10,7 @@ import com.harrison.BankAPI.mocks.MockGen;
 import com.harrison.BankAPI.utils.AddressFixtures;
 import com.harrison.BankAPI.utils.BranchFixtures;
 import com.harrison.BankAPI.utils.TestHelpers;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,11 +49,12 @@ public class BranchControllerTest {
   @Test
   void testGetAll() throws Exception {
     List<MockGen> branches = List.of(BranchFixtures.branch_1, BranchFixtures.branch_2, BranchFixtures.branch_3);
+    List<MockGen> saved = new ArrayList<>();
     for (MockGen branch : branches) {
-      aux.performCreation(branch, "/branches");
+      saved.add(aux.performCreation(branch, "/branches"));
     }
     String response = aux.performfind("/branches");
-    String expect = objectToJson(branches);
+    String expect = objectToJson(saved);
 
     assertEquals(expect, response);
   }

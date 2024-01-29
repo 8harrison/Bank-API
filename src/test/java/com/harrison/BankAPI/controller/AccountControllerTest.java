@@ -1,5 +1,8 @@
 package com.harrison.BankAPI.controller;
 
+import static com.harrison.BankAPI.mocks.MockFactory.mockPerson;
+import static com.harrison.BankAPI.mocks.MockFactory.mockPerson_1;
+import static com.harrison.BankAPI.mocks.MockGen.toMockGen;
 import static com.harrison.BankAPI.utils.TestHelpers.getValidateToken;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,8 +16,7 @@ import com.harrison.BankAPI.mocks.MockGen;
 import com.harrison.BankAPI.utils.AccountFixtures;
 import com.harrison.BankAPI.utils.AddressFixtures;
 import com.harrison.BankAPI.utils.TestHelpers;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,47 +30,45 @@ public class AccountControllerTest {
 
   @Test
   public void testCreateAccount() throws Exception {
-    MockGen account = AccountFixtures.account1;
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    MockGen account = AccountFixtures.account_1_request;
     MockGen savedAccount = aux.performCreation(account);
 
     assertNotNull(savedAccount.get("id"), "A resposta deve incluir o id da conta criada!");
-    assertNotNull(savedAccount.get("branchId"), "A resposta deve incluir o id da branch!");
-    MockGen expectedAccount = new MockGen(account);
-    expectedAccount.put("id", savedAccount.get("id"));
+    assertNotNull(savedAccount.get("accountCode"), "A resposta deve incluir o id da branch!");
+    MockGen expectedAccount = AccountFixtures.account_1_response;
 
     assertEquals(expectedAccount, savedAccount);
-
   }
 
   @Test
   public void testgetAll() throws Exception {
-    Set<MockGen> accounts = Set.of(
-        AccountFixtures.account1,
-        AccountFixtures.account2,
-        AccountFixtures.account3
+    String url = "/auth/register";
+    aux.performCreation(toMockGen(mockPerson()), url);
+    aux.performCreation(toMockGen(mockPerson_1()), url);
+    aux.performCreation(AccountFixtures.account_1_request);
+    aux.performCreation(AccountFixtures.account_2_request);
+
+    List<MockGen> expectedAccounts = List.of(
+        AccountFixtures.account_1_response,
+        AccountFixtures.account_2_response
     );
 
-    Set<MockGen> expectedAccounts = new HashSet<>();
-    for (MockGen account : accounts) {
-      MockGen savedAccount = aux.performCreation(account);
-      expectedAccounts.add(savedAccount);
-    }
     String expected = objectToJson(expectedAccounts);
     String returnedAccounts = aux.performfind("/accounts");
 
     assertEquals(expected, returnedAccounts);
-
   }
 
   @Test
   public void testGetById() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
-
-    String expected = objectToJson(account);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
+    MockGen response = AccountFixtures.account_1_response;
+    String expected = objectToJson(response);
     String returnedAccount = aux.performfind("/accounts/1");
 
     assertEquals(expected, returnedAccount);
-
   }
 
   @Test
@@ -79,18 +79,17 @@ public class AccountControllerTest {
     String message = "Conta não encontrada!";
 
     aux.performNotFound(builder, message);
-
   }
 
   @Test
   public void testGetByCode() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
-
-    String expected = objectToJson(account);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    MockGen account = aux.performCreation(AccountFixtures.account_1_request);
+    MockGen response = AccountFixtures.account_1_response;
+    String expected = objectToJson(response);
     String returnedAccount = aux.performfind("/accounts?code=" + account.get("code"));
 
     assertEquals(expected, returnedAccount);
-
   }
 
   @Test
@@ -101,21 +100,21 @@ public class AccountControllerTest {
     String message = "Conta não encontrada!";
 
     aux.performNotFound(builder, message);
-
   }
 
   @Test
   public void testUpdateAccount() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    MockGen account = aux.performCreation(AccountFixtures.account_1_request);
     MockHttpServletRequestBuilder builder = put("/accounts/" + account.get("id"));
 
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
     account.put("email", "moacir.antunes@gmail.com");
-    MockGen expected = new MockGen(account);
+    MockGen expected = AccountFixtures.account_1_response;
+    expected.put("email", "moacir.antunes@gmail.com");
     MockGen returnedAccount = aux.performUpdate(builder, account);
 
     assertEquals(expected, returnedAccount);
-
   }
 
   @Test
@@ -126,12 +125,12 @@ public class AccountControllerTest {
     String message = "Conta não encontrada!";
 
     aux.performNotFound(builder, message);
-
   }
 
   @Test
   public void testDeleteAccount() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    MockGen account = aux.performCreation(AccountFixtures.account_1_request);
     MockHttpServletRequestBuilder builder = delete("/accounts/" + account.get("id"));
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
     String message = "Conta excluída com sucesso!";
@@ -151,7 +150,8 @@ public class AccountControllerTest {
 
   @Test
   public void testSetAddress() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    MockGen account = aux.performCreation(AccountFixtures.account_1_request);
     MockGen address = AddressFixtures.client_address1;
     MockGen created = aux.performCreation(address, "/accounts/1/address");
     account.put("address", address);

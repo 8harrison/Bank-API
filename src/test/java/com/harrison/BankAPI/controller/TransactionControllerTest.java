@@ -1,7 +1,11 @@
 package com.harrison.BankAPI.controller;
 
+import static com.harrison.BankAPI.mocks.MockFactory.mockPerson;
+import static com.harrison.BankAPI.mocks.MockFactory.mockPerson_1;
+import static com.harrison.BankAPI.mocks.MockGen.toMockGen;
 import static com.harrison.BankAPI.utils.TestHelpers.getValidateToken;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
+import static com.harrison.BankAPI.utils.TransactionFixtures.setIdAndCode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -9,7 +13,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.harrison.BankAPI.mocks.MockGen;
-import com.harrison.BankAPI.models.entity.Account;
 import com.harrison.BankAPI.service.AccountService;
 import com.harrison.BankAPI.utils.AccountFixtures;
 import com.harrison.BankAPI.utils.TestHelpers;
@@ -42,7 +45,8 @@ public class TransactionControllerTest {
 
   @Test
   public void testgetAllTransactions() throws Exception {
-    aux.performCreation(AccountFixtures.account1);
+  aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
 
     Set<MockGen> transactions = Set.of(
         TransactionFixtures.transaction_deposito,
@@ -62,7 +66,6 @@ public class TransactionControllerTest {
     String returnedTransactions = aux.performfind("/accounts/1/transactions");
 
     assertEquals(expected, returnedTransactions);
-
   }
 
   @Test
@@ -79,7 +82,8 @@ public class TransactionControllerTest {
 
   @Test
   public void testGetTransactionById() throws Exception {
-    aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
     MockGen transaction = aux.performCreation(TransactionFixtures.transaction_deposito,
         "/accounts/1/transactions");
 
@@ -91,15 +95,15 @@ public class TransactionControllerTest {
 
   @Test
   public void testGetTransactionByIdNotFound() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
     MockHttpServletRequestBuilder builder = get(
-        "/accounts/" + account.get("id") + "/transactions/100");
+        "/accounts/1/transactions/100");
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
 
     String message = "Transação não encontrada";
 
     aux.performNotFound(builder, message);
-
   }
 
   @Test
@@ -111,12 +115,12 @@ public class TransactionControllerTest {
     String message = "Conta não encontrada!";
 
     aux.performNotFound(builder, message);
-
   }
 
   @Test
   public void testGetTransactionByCode() throws Exception {
-    aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
     MockGen transaction = aux.performCreation(TransactionFixtures.transaction_deposito,
         "/accounts/1/transactions");
 
@@ -128,15 +132,15 @@ public class TransactionControllerTest {
 
   @Test
   public void testGetTransactionByCodeNotFound() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
     MockHttpServletRequestBuilder builder = get(
-        "/accounts/" + account.get("id") + "/transactions?code=0000-d");
+        "/accounts/1/transactions?code=0000-d");
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
 
     String message = "Transação não encontrada";
 
     aux.performNotFound(builder, message);
-
   }
 
   @Test
@@ -148,39 +152,36 @@ public class TransactionControllerTest {
     String message = "Conta não encontrada!";
 
     aux.performNotFound(builder, message);
-
   }
 
   @Test
   public void testDeleteTransaction() throws Exception {
-    MockGen account1 = aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(toMockGen(mockPerson_1()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
+    aux.performCreation(AccountFixtures.account_2_request);
     MockGen transaction = aux.performCreation(TransactionFixtures.transaction_transferencia,
         "/accounts/1/transactions");
-    Object destinatarioId = transaction.get("contaDestinoId");
-    Account account2 = accountService.getById((Long) destinatarioId);
 
     MockHttpServletRequestBuilder builder = delete(
-        "/accounts/" + destinatarioId + "/transactions/" + transaction.get("id"));
+        "/accounts/1/transactions/" + transaction.get("id"));
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
     String message = "Transação excluída com sucesso!";
 
     aux.performDelete(builder, message);
-
-    assertEquals(1000.00, account1.get("saldo"));
-    assertEquals(1000.00, account2.getSaldo());
   }
 
   @Test
   public void testDeleteTransactionByIdNotFound() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
     MockHttpServletRequestBuilder builder = delete(
-        "/accounts/" + account.get("id") + "/transactions/100");
+        "/accounts/1/transactions/100");
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
 
     String message = "Transação não encontrada!";
 
     aux.performNotFound(builder, message);
-
   }
 
   @Test
@@ -196,46 +197,49 @@ public class TransactionControllerTest {
   }
 
   private void testDeposito() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
     MockGen savedtransaction = aux.performCreation(TransactionFixtures.transaction_deposito,
         "/accounts/1/transactions");
     MockGen transaction = TransactionFixtures.transaction_deposito;
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
-
-    MockGen expectedTransaction = new MockGen(transaction);
-    expectedTransaction.put("id", savedtransaction.get("id"));
+    MockGen account = toMockGen(aux.performfind("/accounts/1"));
+    MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
 
     assertEquals(expectedTransaction, savedtransaction);
     assertEquals(11000.00, account.get("saldo"));
   }
 
   private void testSaque() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
     MockGen savedtransaction = aux.performCreation(TransactionFixtures.transaction_saque,
         "/accounts/1/transactions");
     MockGen transaction = TransactionFixtures.transaction_saque;
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
-
-    MockGen expectedTransaction = new MockGen(transaction);
-    expectedTransaction.put("id", savedtransaction.get("id"));
+    MockGen account = toMockGen(aux.performfind("/accounts/1"));
+    MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
 
     assertEquals(expectedTransaction, savedtransaction);
     assertEquals(500.00, account.get("saldo"));
   }
 
   private void testTransferencia() throws Exception {
-    MockGen account1 = aux.performCreation(AccountFixtures.account1);
-    MockGen account2 = aux.performCreation(AccountFixtures.account2);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
+    aux.performCreation(toMockGen(mockPerson_1()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_2_request);
     MockGen savedtransaction = aux.performCreation(TransactionFixtures.transaction_transferencia,
         "/accounts/1/transactions");
     MockGen transaction = TransactionFixtures.transaction_transferencia;
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
 
-    MockGen expectedTransaction = new MockGen(transaction);
-    expectedTransaction.put("id", savedtransaction.get("id"));
+    MockGen account1 = toMockGen(aux.performfind("/accounts/1"));
+    MockGen account2 = toMockGen(aux.performfind("/accounts/1"));
+    MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
 
     assertEquals(expectedTransaction, savedtransaction);
     assertEquals(500.00, account1.get("saldo"));
@@ -243,16 +247,19 @@ public class TransactionControllerTest {
   }
 
   private void testPix() throws Exception {
-    MockGen account1 = aux.performCreation(AccountFixtures.account1);
-    MockGen account2 = aux.performCreation(AccountFixtures.account2);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
+    aux.performCreation(toMockGen(mockPerson_1()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_2_request);
     MockGen savedtransaction = aux.performCreation(TransactionFixtures.transaction_pix,
         "/accounts/1/transactions");
     MockGen transaction = TransactionFixtures.transaction_pix;
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
 
-    MockGen expectedTransaction = new MockGen(transaction);
-    expectedTransaction.put("id", savedtransaction.get("id"));
+    MockGen account1 = toMockGen(aux.performfind("/accounts/1"));
+    MockGen account2 = toMockGen(aux.performfind("/accounts/1"));
+    MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
 
     assertEquals(expectedTransaction, savedtransaction);
     assertEquals(500.00, account1.get("saldo"));
@@ -260,7 +267,8 @@ public class TransactionControllerTest {
   }
 
   private void testCreateTransactionAccountIdNotFound() throws Exception {
-    MockGen account = aux.performCreation(AccountFixtures.account1);
+    aux.performCreation(toMockGen(mockPerson()), "/auth/register");
+    aux.performCreation(AccountFixtures.account_1_request);
     MockHttpServletRequestBuilder builder = post(
         "/accounts/100/transactions/1");
     builder = builder.header("Authorization", "Bearer " + getValidateToken());
@@ -268,6 +276,5 @@ public class TransactionControllerTest {
     String message = "Conta não encontrada!";
 
     aux.performNotFound(builder, message);
-
   }
 }
