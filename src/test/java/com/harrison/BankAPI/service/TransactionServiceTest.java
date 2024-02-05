@@ -20,10 +20,14 @@ import com.harrison.BankAPI.models.entity.Person;
 import com.harrison.BankAPI.models.entity.Transaction;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.springframework.core.annotation.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -63,7 +67,7 @@ public class TransactionServiceTest {
     account2 = accountService.createAccount(account2, branch.getCode());
     transaction = mockTransaction_deposito();
     transaction.setTitular(account1);
-    transaction = accountService.createTransaction(1L, transaction);
+    transaction = accountService.createTransaction(account1.getId(), transaction);
   }
 
   @Test
@@ -81,11 +85,10 @@ public class TransactionServiceTest {
 
   @Test
   public void testGetTransactionById() {
-    Transaction founded = accountService.getTransactionById(1L, transaction.getId());
+    Transaction founded = accountService.getTransactionById(account1.getId(), transaction.getId());
 
     String expected = objectToJson(transaction);
     String response = objectToJson(founded);
-
     assertEquals(expected, response);
   }
 

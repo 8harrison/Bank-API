@@ -45,12 +45,14 @@ public class BranchServiceTest {
     testGetById();
     testGetByIdNotFound();
     testGetAll();
+    testGetByCode();
     testUpdate();
     testUpdateNotFound();
     testDelete();
     testDeleteNotFound();
     testSetAddress();
     testSetAddressBranchNotFound();
+    testGetByCodeNotFound();
   }
 
 
@@ -130,7 +132,20 @@ public class BranchServiceTest {
 
   private void testSetAddressBranchNotFound() {
     assertThrows(NotFoundException.class, () ->
-        branchService.setAddress(100L, AddressFixtures.branch_address1.toAddress()));
+        branchService.setAddress(100L, mockAddress()));
+  }
+
+  private void testGetByCode() {
+    Branch founded = branchService.getByCode(saved.getCode());
+    String expected = objectToJson(saved);
+    String response = objectToJson(founded);
+
+    assertEquals(expected, response);
+  }
+
+  private void testGetByCodeNotFound() {
+    assertThrows(NotFoundException.class, () ->
+        branchService.getByCode("0000"));
   }
 
 }

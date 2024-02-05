@@ -4,6 +4,7 @@ import static com.harrison.BankAPI.mocks.MockFactory.mockAccount;
 import static com.harrison.BankAPI.mocks.MockFactory.mockAddress;
 import static com.harrison.BankAPI.mocks.MockFactory.mockBranch_1;
 import static com.harrison.BankAPI.mocks.MockFactory.mockPerson;
+import static com.harrison.BankAPI.mocks.MockFactory.mockPerson_1;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,6 +16,7 @@ import com.harrison.BankAPI.models.entity.Address;
 import com.harrison.BankAPI.models.entity.Branch;
 import com.harrison.BankAPI.models.entity.Person;
 import com.harrison.BankAPI.utils.AddressFixtures;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -42,10 +44,18 @@ public class AccountServiceTest {
 
   Account account;
 
+  Branch branch;
+
+  Person person;
+
   @BeforeEach
   public void setup() {
     account = mockAccount();
+    branch = branchService.create(mockBranch_1());
+    person = personService.register(mockPerson());
     saved = savedAccount();
+
+    String test = "festa da salsicha";
   }
   @Test
   public void testCreateAccount() {
@@ -57,10 +67,37 @@ public class AccountServiceTest {
   }
 
   private Account savedAccount() {
-    Person person = personService.register(mockPerson());
-    Branch branch = branchService.create(mockBranch_1());
     account.setPerson(person);
     return accountService.createAccount(account, branch.getCode());
+  }
+
+  @Test
+  public void testCreateAccountPersonNotFound() {
+    person.setId(100L);
+    account.setPerson(person);
+    assertThrows(NotFoundException.class, () ->
+        accountService.createAccount(account, branch.getCode()));
+  }
+
+  @Test
+  public void testCreateAccountBranchNotFound() {
+    branch.setCode("0000");
+    assertThrows(NotFoundException.class, () ->
+        accountService.createAccount(account, branch.getCode()));
+  }
+
+  @Test
+  public void testGetAllAccounts() {
+    Person savedPerson = personService.register(mockPerson_1());
+    Account account1 = mockAccount();
+    account1.setPerson(savedPerson);
+    Account savedAccount = accountService.createAccount(account1, branch.getCode());
+    List<Account> list = List.of(saved, savedAccount);
+    List<Account> allAccounts = accountService.getAll();
+    String expected = objectToJson(list);
+    String response = objectToJson(allAccounts);
+
+    assertEquals(expected, response);
   }
 
   @Test
@@ -129,6 +166,6 @@ public class AccountServiceTest {
     MockGen address = AddressFixtures.client_address1;
 
     assertThrows(NotFoundException.class, () ->
-        accountService.setAddress(100L, address.toAddress()));
+        accountService.setAddress(100L, mockAddress()));
   }
 }
