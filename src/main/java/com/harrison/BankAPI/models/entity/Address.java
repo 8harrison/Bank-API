@@ -37,12 +37,13 @@ public class Address {
   public Address() {
   }
 
-  public Address(Long id, String rua, Integer numero, String cep, Account account) {
+  public Address(Long id, String rua, Integer numero, String cep, Account account, Branch branch) {
     this.id = id;
     this.rua = rua;
     this.numero = numero;
     this.cep = cep;
     this.account = account;
+    this.branch = branch;
   }
 
   public String getRua() {
@@ -75,5 +76,21 @@ public class Address {
 
   public void setCep(String cep) {
     this.cep = cep;
+  }
+
+  public Branch getBranch() {
+    return branch;
+  }
+
+  public void setBranch(Branch branch) {
+    this.branch = branch;
+  }
+
+  public Account getAccount() {
+    return account;
+  }
+
+  public void setAccount(Account account) {
+    this.account = account;
   }
 }

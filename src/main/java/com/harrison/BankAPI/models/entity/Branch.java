@@ -43,15 +43,15 @@ public class Branch {
 
   @OneToMany(mappedBy = "branch", fetch = FetchType.EAGER)
   @JsonIgnore
-  private List<Account> accounts;
+  private List<Account> accounts = new ArrayList<>();
 
   public Branch() {
   }
 
-  public Branch(Long id, String name, List<Account> accounts) {
+  public Branch(Long id, String name, Address address) {
     this.id = id;
     this.name = name;
-    this.accounts = accounts;
+    this.address = address;
   }
 
   public List<Account> getAccounts() {

@@ -7,15 +7,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
@@ -54,6 +48,7 @@ public class Person implements UserDetails {
 
   public Person() {
   }
+
 
   public Person(Long id, String name, String email, String cpf, String username, String password,
       String role, List<Branch> branches, Account account) {
@@ -112,7 +107,8 @@ public class Person implements UserDetails {
     return cpf;
   }
 
-  public void setCpf(String cpf) {
+
+  public void setCpf( String cpf) {
     this.cpf = cpf;
   }
 
