@@ -12,7 +12,7 @@ public class MockFactory {
     Person person = new Person();
     person.setName("Moacir Pitagoras");
     person.setEmail("moacir.pit@hotmail.com");
-    person.setCpf("12345678");
+    person.setCpf("123.456.789-00");
     person.setUsername("MoacirPitagoras");
     person.setPassword("54321");
     person.setRole("CLIENT");
@@ -23,7 +23,7 @@ public class MockFactory {
     Person person = new Person();
     person.setName("Calice de Jesus");
     person.setEmail("calice.jesus@hotmail.com");
-    person.setCpf("45454448866");
+    person.setCpf("454.544.488-66");
     person.setUsername("caliceJesus");
     person.setPassword("123456");
     person.setRole("CLIENT");

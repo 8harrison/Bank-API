@@ -35,4 +35,11 @@ public static MockGen toMockGen(String json) throws JsonProcessingException {
     return objectMapper.readValue(json, MockGen.class);
 }
 
+public static MockGen setIdAndCode(MockGen response, MockGen request) {
+    request.put("id", response.get("id"));
+    request.put("code", response.get("code"));
+    request.put("address", response.get("address"));
+    return request;
+}
+
 }
