@@ -8,6 +8,7 @@ import com.harrison.BankAPI.models.entity.Branch;
 import com.harrison.BankAPI.models.entity.Person;
 import com.harrison.BankAPI.models.entity.Transaction;
 import com.harrison.BankAPI.models.repository.AccountRepository;
+import com.harrison.BankAPI.models.repository.AddressRepository;
 import com.harrison.BankAPI.models.repository.BranchRepository;
 import com.harrison.BankAPI.models.repository.PersonRepository;
 import com.harrison.BankAPI.models.repository.TransactionRepository;
@@ -28,18 +29,25 @@ public class AccountService {
   private final BranchRepository branchRepository;
 
   private final PersonRepository personRepository;
+  private final AddressRepository addressRepository;
 
   @Autowired
   public AccountService(AccountRepository accountRepository,
-      TransactionRepository transactionRepository, BranchRepository branchRepository, PersonRepository personRepository) {
+      TransactionRepository transactionRepository, BranchRepository branchRepository, PersonRepository personRepository,
+      AddressRepository addressRepository) {
     this.accountRepository = accountRepository;
     this.transactionRepository = transactionRepository;
     this.branchRepository = branchRepository;
     this.personRepository = personRepository;
+    this.addressRepository = addressRepository;
   }
 
   public Account createAccount(Account account, String branchCode) {
     return setCode(account, branchCode);
+  }
+
+  public List<Account> getAll() {
+    return accountRepository.findAll();
   }
 
   public Account getById(Long id) {
@@ -56,8 +64,11 @@ public class AccountService {
   }
 
   public Account updateAccount(Long id, Account account) {
+    String branchCode = account.getBranch().getCode();
     verifyAccount(id);
-    account.setId(id);
+    Branch branch = verifyBranch(branchCode);
+    branch.getAccounts().add(account);
+    branchRepository.save(branch);
     return accountRepository.save(account);
   }
 
@@ -69,9 +80,6 @@ public class AccountService {
 
   public Transaction createTransaction(Long id, Transaction transaction) {
     verifyAccount(id);
-    Map<String, Account> accounts = identifier(transaction);
-    accounts.values().forEach(account -> account.getTransactions().add(transaction));
-    accounts.values().forEach(accountRepository::save);
     return setCode(transaction);
   }
 
@@ -102,6 +110,7 @@ public class AccountService {
 
   public Account setAddress(Long id, Address address) {
     Account account = verifyAccount(id);
+    addressRepository.save(address);
     account.setAddress(address);
     return accountRepository.save(account);
   }
@@ -139,22 +148,36 @@ public class AccountService {
   }
 
   private String generateCode(Account account) {
-    int num = account.getBranch().getAccounts().size() + 1;
-    String code = "" + num;
-    while (code.length() < 5) {
-      code = "0" + code;
+    int num = account.getBranch().getAccounts().size() - 1;
+    if (num >= 0) {
+       String lastCode = account.getBranch().getAccounts().get(num).getCode();
+       String[] serial = lastCode.split("[^0-9]");
+      num = Integer.parseInt(serial[serial.length-1]) + 1;
+    }else {
+      num = 1;
     }
-    return code;
+    StringBuilder code = new StringBuilder("" + num);
+    while (code.length() < 5) {
+      code.insert(0, "0");
+    }
+    return code.toString();
   }
 
   private String generateCode(Transaction transaction) {
-    int num = transaction.getTitular().getTransactions().size() + 1;
-
-    String code = "" + num;
-    while (code.length() < 7) {
-      code = "0" + code;
+    List<Transaction> test = transaction.getTitular().getTransactions();
+    int num = transaction.getTitular().getTransactions().size() - 1;
+    if (num >= 0) {
+      String lastCode = transaction.getTitular().getTransactions().get(num).getCode();
+      String[] serial = lastCode.split("[^0-9]");
+      num = Integer.parseInt(serial[serial.length-1]) + 1;
+    } else {
+      num = 1;
     }
-    return code;
+    StringBuilder code = new StringBuilder("" + num);
+    while (code.length() < 7) {
+      code.insert(0, "0");
+    }
+    return code.toString();
   }
 
   private Account setCode(Account account, String branchCode) {
@@ -168,10 +191,15 @@ public class AccountService {
   }
 
   private Transaction setCode(Transaction transaction) {
+    Map<String, Account> accounts = identifier(transaction);
     String code = generateCode(transaction);
     char letter = transaction.getName().charAt(0);
-    code += code + "-" + letter;
+    code += "-" + letter;
     transaction.setCode(code);
+    accounts.values().forEach(account -> {
+      account.getTransactions().add(transaction);
+      accountRepository.save(account);
+    });
     return transactionRepository.save(transaction);
   }
 
