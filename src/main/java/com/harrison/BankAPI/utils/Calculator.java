@@ -46,18 +46,13 @@ public class Calculator {
   }
 
   public static Map<String, Account> identifier(Transaction transaction) {
-    switch (transaction.getName()) {
-      case "deposito":
-        return deposito(transaction);
-      case "saque":
-        return saque(transaction);
-      case "transferencia":
-        return transferencia(transaction);
-      case "pix":
-        return pix(transaction);
-      default:
-        throw new InvalidTransactionException("Transação inválida!");
-    }
+    return switch (transaction.getName()) {
+      case "deposito" -> deposito(transaction);
+      case "saque" -> saque(transaction);
+      case "transferencia" -> transferencia(transaction);
+      case "pix" -> pix(transaction);
+      default -> throw new InvalidTransactionException("Transação inválida!");
+    };
   }
 
   private static boolean verificaFundos(Account account, Double valor) {
