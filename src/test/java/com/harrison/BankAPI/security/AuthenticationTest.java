@@ -1,4 +1,4 @@
-package com.harrison.BankAPI.controller;
+package com.harrison.BankAPI.security;
 
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -58,7 +58,6 @@ public class AuthenticationTest {
   @Test
   void testLogin() throws Exception {
     MockGen person = new MockGen(PersonFixtures.person_client);
-    performPersonCreation(person);
 
     testLoginFail(person);
     aux.createPersonAuthenticate(person);

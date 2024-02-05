@@ -1,6 +1,12 @@
-package com.harrison.BankAPI.controller;
+package com.harrison.BankAPI.security;
 
+import static com.harrison.BankAPI.utils.AccountFixtures.account_1_request;
+import static com.harrison.BankAPI.utils.AddressFixtures.*;
+import static com.harrison.BankAPI.utils.BranchFixtures.*;
+import static com.harrison.BankAPI.utils.PersonFixtures.*;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
+import static com.harrison.BankAPI.utils.TransactionFixtures.transaction_deposito;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,12 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harrison.BankAPI.mocks.MockGen;
-import com.harrison.BankAPI.utils.AddressFixtures;
-import com.harrison.BankAPI.utils.BranchFixtures;
-import com.harrison.BankAPI.utils.PersonFixtures;
 import com.harrison.BankAPI.utils.SimpleResultHandler;
 import com.harrison.BankAPI.utils.TestHelpers;
-import com.harrison.BankAPI.utils.TransactionFixtures;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,35 +53,49 @@ public class AuthorizationTest {
 
   TestHelpers aux = new TestHelpers();
 
+  String adminToken;
+
+  String managerToken;
+
   @BeforeEach
-  public void setup() {
+  public void setup() throws Exception {
     this.mockMvc = MockMvcBuilders
         .webAppContextSetup(wac)
         .apply(springSecurity())
         .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
         .alwaysDo(new SimpleResultHandler())
         .build();
+    adminToken = aux.createPersonAuthenticate(person_admin);
+    MockGen manager = person_manager;
+    MockGen branch = branch_1;
+    managerToken = aux.createPersonAuthenticate(manager);
+    perform(branch, post("/branches"), managerToken, CREATED);
+  }
 
+  private MockGen insertPersonInAccount(MockGen person) throws Exception {
+    aux.performCreation(person, "/auth/register");
+    MockGen mockPerson = account_1_request.clone();
+    mockPerson.put("cpf", person.get("cpf"));
+    return mockPerson;
   }
 
   @Test
   void testAccountAuthorizationcreate() throws Exception {
     String url = "/accounts";
-
-    String json = objectToJson(PersonFixtures.person_client1);
-
+    String json = objectToJson(insertPersonInAccount(person_client1));
+    String json1 = objectToJson(insertPersonInAccount(person_client2));
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, post(url));
+    checkAuthorization(token, FORBIDDEN, json, post(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, post(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, json, post(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.CREATED, json, post(url));
+    token = aux.createPersonAuthenticate(person_admin_1);
+    checkAuthorization(token, CREATED, json, post(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.CREATED, json, post(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, CREATED, json1, post(url));
   }
 
   @Test
@@ -88,276 +104,310 @@ public class AuthorizationTest {
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, OK, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, get(url));
   }
 
   @Test
   void testAccountAuthorizationGetById() throws Exception {
-    String url = "/accounts/1";
-
+    MockGen account = insertPersonInAccount(person_client1);
+    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    String url = "/accounts/" + created.get("id");
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, OK, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, get(url));
   }
 
   @Test
   void testAccountAuthorizationGetByCode() throws Exception {
-    MockGen account = aux.performCreation(PersonFixtures.person_client);
-    String url = "/accounts?code=" + account.get("code");
+    MockGen account = insertPersonInAccount(person_client1);
+    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    String url = "/accounts?code=" + created.get("code");
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, OK, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, get(url));
   }
 
   @Test
   void testAccountAuthorizationUpdate() throws Exception {
-    MockGen account = aux.performCreation(PersonFixtures.person_client);
-    String url = "/accounts/" + account.get("id");
+    MockGen account = insertPersonInAccount(person_client1);
+    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    String url = "/accounts/" + created.get("id");
 
-    account.put("email", "pit.moacir@yahool.com");
+    created.put("email", "pit.moacir@yahool.com");
 
-    String json = objectToJson(account);
+    String json = objectToJson(created);
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, put(url));
+    checkAuthorization(token, FORBIDDEN, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, put(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.OK, json, put(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, OK, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, json, put(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, json, put(url));
   }
 
   @Test
   void testAccountAuthorizationDelete() throws Exception {
-    MockGen account = aux.performCreation(PersonFixtures.person_client);
-    String url = "/accounts/" + account.get("id");
+    MockGen account = insertPersonInAccount(person_client1);
+    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    String url = "/accounts/" + created.get("id");
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, delete(url));
+    checkAuthorization(token, FORBIDDEN, delete(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, delete(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, delete(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.OK, delete(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, OK, delete(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, delete(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, delete(url));
   }
 
   @Test
   void testTransactionAuthorizationCreate() throws Exception {
-    MockGen account = aux.performCreation(PersonFixtures.person_client1);
-    String url = "/accounts/" + account.get("id") + "/transactions";
+    MockGen account = insertPersonInAccount(person_client);
+    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    String url = "/accounts/" + created.get("id") + "/transactions";
 
-    MockGen account1 = aux.performCreation(PersonFixtures.person_client2);
+    MockGen account1 = insertPersonInAccount(person_client2);
+    MockGen created1 = perform(account1,
+        post("/accounts"),
+        adminToken, CREATED);
 
-    String json = objectToJson(TransactionFixtures.transaction_deposito);
+    String json = objectToJson(transaction_deposito);
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, post(url));
+    checkAuthorization(token, FORBIDDEN, json, post(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.CREATED, json, post(url));
+    token = aux.personAuthenticate(person_client);
+    checkAuthorization(token, CREATED, json, post(url));
     checkAuthorization(token,
-        HttpStatus.FORBIDDEN, json, post("/accounts/" + account1.get("id") + "/transactions/1"));
+        FORBIDDEN, json, post("/accounts/" + created1.get("id") + "/transactions"));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, post(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, FORBIDDEN, json, post(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, post(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, FORBIDDEN, json, post(url));
   }
 
   @Test
   void testTransactionAuthorizationGetById() throws Exception {
-    MockGen account = aux.performCreation(PersonFixtures.person_client1);
-    String url = "/accounts/" + account.get("id") + "/transactions/" + account.get("id");
-    MockGen transaction1 = aux.performCreation(TransactionFixtures.transaction_deposito, url);
+    MockGen account = insertPersonInAccount(person_client);
+    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    String url = "/accounts/" + created.get("id") + "/transactions/1";
+    String clientToken = aux.personAuthenticate(person_client);
+    perform(transaction_deposito,
+        post("/accounts/" + created.get("id") + "/transactions"),
+        clientToken, CREATED);
 
-    MockGen account1 = aux.performCreation(PersonFixtures.person_client2);
+    MockGen account1 = insertPersonInAccount(person_client2);
+    MockGen created1 = perform(account1,
+        post("/accounts"), adminToken, CREATED);
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.OK, get(url));
-    checkAuthorization(token,
-        HttpStatus.FORBIDDEN, get("/accounts/" + account1.get("id") + "/transactions/1"));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_client);
+    checkAuthorization(clientToken, OK, get(url));
+    checkAuthorization(clientToken,
+        FORBIDDEN, get("/accounts/" + created1.get("id") + "/transactions/1"));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, OK, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, get(url));
   }
 
   @Test
   void testTransactionAuthorizationGetByCode() throws Exception {
-    MockGen account = aux.performCreation(PersonFixtures.person_client1);
-    String url = "/accounts/" + account.get("id") + "/transactions";
-    MockGen transaction1 = aux.performCreation(TransactionFixtures.transaction_deposito, url);
-    url += "?code=" + transaction1.get("code");
-    MockGen account1 = aux.performCreation(PersonFixtures.person_client2);
+    MockGen account = insertPersonInAccount(person_client);
+    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    String clientToken = aux.personAuthenticate(person_client);
+    MockGen transaction1 = perform(transaction_deposito,
+        post("/accounts/" + created.get("id") + "/transactions"),
+        clientToken, CREATED);
+
+    String url = "/accounts/" + created.get("id") + "/transactions?code=" + transaction1.get("code");
+    MockGen account1 = insertPersonInAccount(person_client2);
+    MockGen created1 = perform(account1,
+        post("/accounts"), adminToken, CREATED);
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.OK, get(url));
-    checkAuthorization(token, HttpStatus.FORBIDDEN,
-        get("/accounts/" + account1.get("id") + "/transactions?code=" + transaction1.get("code")));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_client);
+    checkAuthorization(clientToken, OK, get(url));
+    checkAuthorization(clientToken, FORBIDDEN,
+        get("/accounts/" + created1.get("id") + "/transactions?code=" + transaction1.get("code")));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, OK, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, get(url));
   }
 
   @Test
   void testTransactionAuthorizationGetAll() throws Exception {
-    MockGen account = aux.performCreation(PersonFixtures.person_client1);
-    String url = "/accounts/" + account.get("id") + "/transactions";
+    MockGen account = insertPersonInAccount(person_client);
+    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    String url = "/accounts/" + created.get("id") + "/transactions";
+    String clientToken = aux.personAuthenticate(person_client);
 
-    MockGen person1 = performPersonCreation(PersonFixtures.person_client2);
+
+    MockGen account1 = insertPersonInAccount(person_client2);
+    MockGen created1 = perform(account1,
+        post("/accounts"), adminToken, CREATED);
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.OK, get(url));
-    checkAuthorization(token, HttpStatus.FORBIDDEN,
-        get("/accounts/" + person1.get("id") + "/transactions/1"));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_client);
+    checkAuthorization(clientToken, OK, get(url));
+    checkAuthorization(clientToken, FORBIDDEN,
+        get("/accounts/" + created1.get("id") + "/transactions/1"));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, OK, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, get(url));
   }
 
   @Test
   void testTransactionAuthorizationDelete() throws Exception {
-    MockGen account = aux.performCreation(PersonFixtures.person_client1);
-    String url = "/accounts/" + account.get("id") + "/transactions/";
-    MockGen transaction1 = aux.performCreation(TransactionFixtures.transaction_deposito, url);
+    MockGen account = insertPersonInAccount(person_client);
+    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    String clientToken = aux.personAuthenticate(person_client);
+    MockGen transaction1 = perform(transaction_deposito,
+        post("/accounts/" + created.get("id") + "/transactions"),
+        clientToken, CREATED);
 
-    url += transaction1.get("id");
+    MockGen transaction2 = perform(transaction_deposito,
+        post("/accounts/" + created.get("id") + "/transactions"),
+        clientToken, CREATED);
 
-    MockGen person1 = performPersonCreation(PersonFixtures.person_client2);
+    String url = "/accounts/" + created.get("id") + "/transactions/" + transaction1.get("id");
+    MockGen account1 = insertPersonInAccount(person_client2);
+    MockGen created1 = perform(account1,
+        post("/accounts"), adminToken, CREATED);
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, delete(url));
+    checkAuthorization(token, FORBIDDEN, delete(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, delete(url));
-    checkAuthorization(token, HttpStatus.FORBIDDEN,
-        delete("/accounts/" + person1.get("id") + "/transactions/1"));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_client);
+    checkAuthorization(clientToken, FORBIDDEN, delete(url));
+    checkAuthorization(clientToken, FORBIDDEN,
+        delete("/accounts/" + created1.get("id") + "/transactions/1"));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.OK, delete(url));
-
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, delete(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, OK, delete(url));
+    url = "/accounts/" + created.get("id") + "/transactions/" + transaction2.get("id");
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, delete(url));
   }
 
   @Test
   void testAccountSetAddressAuthorization() throws Exception {
-    MockGen account = aux.performCreation(PersonFixtures.person_client);
-
-    String url = "/accounts/" + account.get("id") + "/address";
+    MockGen account = insertPersonInAccount(person_client1);
+    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    String url = "/accounts/" + created.get("id") + "/address";
 
     String token = null;
 
-    String json = objectToJson(AddressFixtures.client_address1);
+    String json = objectToJson(client_address1);
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, put(url));
+    checkAuthorization(token, FORBIDDEN, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, put(url));
+    token = aux.personAuthenticate(person_client1);
+    checkAuthorization(token, FORBIDDEN, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.OK, json, put(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, OK, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, json, put(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, json, put(url));
   }
 
   @Test
   void testBrachAuthorizationCreate() throws Exception {
-    String url = "/braches";
+    String url = "/branches";
 
-    String json = objectToJson(BranchFixtures.branch_1);
+    String json = objectToJson(branch_2);
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, post(url));
+    checkAuthorization(token, FORBIDDEN, json, post(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, post(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, json, post(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, post(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, FORBIDDEN, json, post(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.CREATED, json, post(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, CREATED, json, post(url));
   }
 
   @Test
   void testBrachAuthorizationGetById() throws Exception {
-    MockGen branch = aux.performCreation(BranchFixtures.branch_1, "/branches");
+    MockGen branch = perform(branch_2, post("/branches"),
+        managerToken, CREATED);
     String url = "/branches/" + branch.get("id");
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, get(url));
   }
 
   @Test
@@ -366,74 +416,77 @@ public class AuthorizationTest {
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, FORBIDDEN, get(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, get(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, get(url));
   }
 
   @Test
   void testBrachAuthorizationUpdate() throws Exception {
-    MockGen branch = aux.performCreation(BranchFixtures.branch_1, "/branches");
+    MockGen branch = perform(branch_2, post("/branches"),
+        managerToken, CREATED);
     String url = "/branches/" + branch.get("id");
     String json = objectToJson(branch);
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, put(url));
+    checkAuthorization(token, FORBIDDEN, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, put(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, put(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, FORBIDDEN, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, json, put(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, json, put(url));
   }
 
   @Test
   void testBrachAuthorizationDelete() throws Exception {
-    MockGen branch = aux.performCreation(BranchFixtures.branch_1, "/branches");
+    MockGen branch = perform(branch_2, post("/branches"),
+        managerToken, CREATED);
     String url = "/branches/" + branch.get("id");
 
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, delete(url));
+    checkAuthorization(token, FORBIDDEN, delete(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, delete(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, delete(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, delete(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, FORBIDDEN, delete(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, delete(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, delete(url));
   }
 
   @Test
   void testBrachSetAdderessAuthorization() throws Exception {
-    MockGen branch = aux.performCreation(BranchFixtures.branch_1);
-    String url = "/braches/" + branch.get("id") + "/address";
+    MockGen branch = perform(branch_2, post("/branches"),
+        managerToken, CREATED);
+    String url = "/branches/" + branch.get("id") + "/address";
 
-    String json = objectToJson(AddressFixtures.branch_address1);
+    String json = objectToJson(branch_address1);
     String token = null;
 
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, put(url));
+    checkAuthorization(token, FORBIDDEN, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, put(url));
+    token = aux.createPersonAuthenticate(person_client);
+    checkAuthorization(token, FORBIDDEN, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
-    checkAuthorization(token, HttpStatus.FORBIDDEN, json, put(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_admin);
+    checkAuthorization(adminToken, FORBIDDEN, json, put(url));
 
-    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    checkAuthorization(token, HttpStatus.OK, json, put(url));
+    //token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    checkAuthorization(managerToken, OK, json, put(url));
   }
 
   private void checkAuthorization(String token, HttpStatus expectedStatus,
@@ -444,7 +497,7 @@ public class AuthorizationTest {
       builder = builder.header("Authorization", "Bearer " + token);
     }
 
-    mockMvc.perform(builder.accept(MediaType.APPLICATION_JSON)
+    mockMvc.perform(builder.contentType(MediaType.APPLICATION_JSON)
             .content(json))
         .andExpect(status().is(expectedStatus.value()));
   }
@@ -461,16 +514,16 @@ public class AuthorizationTest {
         .andExpect(status().is(expectedStatus.value()));
   }
 
-  private MockGen performPersonCreation(MockGen person) throws Exception {
-    String url = "/auth/register";
-
+  public MockGen perform(MockGen mockGen, MockHttpServletRequestBuilder builder, String token,
+      HttpStatus expectedStatus) throws Exception {
+    builder = builder.header("Authorization", "Bearer " + token);
     String responseContent =
-        mockMvc.perform(post(url)
+        mockMvc.perform(builder
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectToJson(person)))
-            .andExpect(status().isCreated())
+                .content(objectToJson(mockGen)))
+            .andExpect(status().is(expectedStatus.value()))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn().getResponse().getContentAsString();
+            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
     return objectMapper.readValue(responseContent, MockGen.class);
   }
