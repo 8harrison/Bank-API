@@ -1,101 +1,206 @@
 package com.harrison.BankAPI.controller;
 
+import static com.harrison.BankAPI.mocks.MockGen.setIdAndCode;
+import static com.harrison.BankAPI.utils.TestHelpers.objectMapper;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.harrison.BankAPI.mocks.MockGen;
 import com.harrison.BankAPI.utils.AddressFixtures;
 import com.harrison.BankAPI.utils.BranchFixtures;
+import com.harrison.BankAPI.utils.PersonFixtures;
+import com.harrison.BankAPI.utils.SimpleResultHandler;
 import com.harrison.BankAPI.utils.TestHelpers;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class BranchControllerTest {
 
   TestHelpers aux = new TestHelpers();
 
-  @Test
-  void testCreate() throws Exception {
-    MockGen branch = BranchFixtures.branch_1;
-    MockGen saved = aux.performCreation(branch, "/branches");
-    branch.put("id", saved.get("id"));
+  @Autowired
+  WebApplicationContext wac;
 
+  private MockGen saved;
+
+  private MockGen branch;
+
+  String token;
+
+  @Autowired
+  MockMvc mockMvc;
+
+  @BeforeEach
+  public void setup() throws Exception {
+    this.mockMvc = MockMvcBuilders
+        .webAppContextSetup(wac)
+        .apply(springSecurity())
+        .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
+        .alwaysDo(new SimpleResultHandler())
+        .build();
+    branch = BranchFixtures.branch_1;
+    token = aux.createPersonAuthenticate(PersonFixtures.person_manager);
+    saved = perform(branch, post("/branches"), HttpStatus.CREATED, token);
+  }
+
+  @Test
+  void testCreate() {
+    setIdAndCode(saved, branch);
     assertEquals(branch, saved);
   }
 
   @Test
   void testGetById() throws Exception {
-    MockGen branch = BranchFixtures.branch_1;
-    MockGen saved = aux.performCreation(branch, "/branches");
-    String founded = aux.performfind("/branches/1");
-    String expect = objectToJson(saved);
-
-    assertEquals(expect, founded);
+    MockGen founded = perform(get("/branches/1"), HttpStatus.OK, token);
+    assertEquals(saved, founded);
   }
 
   @Test
   void testGetByIdNotFound() throws Exception {
-    aux.performNotFound(get("/branches/100"), "Agência não encontrada!");
+    perform(get("/branches/100"), HttpStatus.NOT_FOUND, token);
   }
 
   @Test
   void testGetAll() throws Exception {
-    List<MockGen> branches = List.of(BranchFixtures.branch_1, BranchFixtures.branch_2, BranchFixtures.branch_3);
-    List<MockGen> saved = new ArrayList<>();
+    List<MockGen> branches = List.of(BranchFixtures.branch_2,
+        BranchFixtures.branch_3);
+    List<MockGen> expect = new ArrayList<>();
     for (MockGen branch : branches) {
-      saved.add(aux.performCreation(branch, "/branches"));
+      expect.add(perform(branch, post("/branches"), HttpStatus.CREATED, token));
     }
-    String response = aux.performfind("/branches");
-    String expect = objectToJson(saved);
-
-    assertEquals(expect, response);
+    expect.add(0, saved);
+    MockGen[] response = performGetAll(get("/branches"), token);
+    MockGen[] expected = expect.toArray(MockGen[]::new);
+    assertArrayEquals(expected, response);
   }
 
   @Test
   void testUpdate() throws Exception {
-    MockGen branch = BranchFixtures.branch_1;
-    MockGen saved = aux.performCreation(branch, "/branches");
+    branch = BranchFixtures.branch_1;
+    saved = perform(branch, post("/branches"), HttpStatus.CREATED, token);
     saved.put("name", "Agência da Igreja da Matriz");
-    MockGen update = aux.performUpdate(put("/branches/1"), saved);
+    MockGen update = perform(saved, put("/branches/" + saved.get("id")), HttpStatus.OK, token);
 
     assertEquals(saved, update);
   }
 
   @Test
   void testUpdateNotFound() throws Exception {
-    aux.performNotFound(put("/branches/100"), "Agência não encontrada!");
+    branch.remove("id");
+    perform(branch, put("/branches/100"), HttpStatus.NOT_FOUND, token);
   }
 
   @Test
   void testDelete() throws Exception {
-    aux.performCreation(BranchFixtures.branch_1, "/branches");
-    aux.performDelete(delete("/branches/1"), "Agência excluída com sucesso!");
+    perform(BranchFixtures.branch_1, post("/branches"), HttpStatus.CREATED, token);
+    perform(delete("/branches/1"), token);
   }
 
   @Test
   void testDeleteNotFound() throws Exception {
-    aux.performNotFound(delete("/branches/100"), "Agência não encontrada!");
+    perform(delete("/branches/100"), HttpStatus.NOT_FOUND, token);
   }
 
   @Test
   void testSetAddress() throws Exception {
-    MockGen expect = aux.performCreation(BranchFixtures.branch_1, "/branches");
-    MockGen response = aux.performUpdate(put("/branches/1/address"), AddressFixtures.branch_address1);
-    expect.put("address", AddressFixtures.branch_address1);
+    MockGen expect = perform(BranchFixtures.branch_1, post("/branches"), HttpStatus.CREATED, token);
+    MockGen response = perform(AddressFixtures.branch_address1,
+        put("/branches/%s/address".formatted(expect.get("id"))), HttpStatus.OK, token);
+    setIdAndCode(response, expect);
 
     assertEquals(expect, response);
   }
 
   @Test
   void testSetAddressNotFound() throws Exception {
-    aux.performNotFound(put("/branches/100/address"), "Agência não encontrada!");
+    MockGen address = AddressFixtures.branch_address2;
+    perform(address, put("/branches/100/address"), HttpStatus.NOT_FOUND, token);
+  }
+
+  private MockGen perform(MockGen mockGen, MockHttpServletRequestBuilder builder,
+      HttpStatus expectedStatus, String token)
+      throws Exception {
+    builder = builder.header("Authorization", "Bearer " + token);
+    if (expectedStatus == HttpStatus.NOT_FOUND) {
+      mockMvc.perform(builder
+              .contentType(MediaType.APPLICATION_JSON)
+          .content(objectToJson(mockGen)))
+         .andExpect(status().isNotFound());
+      return null;
+    }
+    String responseContent =
+        mockMvc.perform(builder
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectToJson(mockGen)))
+            .andExpect(status().is(expectedStatus.value()))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+    return objectMapper.readValue(responseContent, MockGen.class);
+  }
+
+  private MockGen perform(MockHttpServletRequestBuilder builder, HttpStatus expectedStatus,
+      String token)
+      throws Exception {
+    builder = builder.header("Authorization", "Bearer " + token);
+    if (expectedStatus != HttpStatus.OK) {
+      mockMvc.perform(builder
+          .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isNotFound());
+      return null;
+    }
+    String responseContent =
+        mockMvc.perform(builder
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().is(expectedStatus.value()))
+            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+    return objectMapper.readValue(responseContent, MockGen.class);
+  }
+
+  private void perform(MockHttpServletRequestBuilder builder, String token)
+      throws Exception {
+    builder = builder.header("Authorization", "Bearer " + token);
+        mockMvc.perform(builder
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+  }
+
+  private MockGen[] performGetAll(MockHttpServletRequestBuilder builder, String token)
+      throws Exception {
+    builder = builder.header("Authorization", "Bearer " + token);
+    String responseContent =
+        mockMvc.perform(builder
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().is(HttpStatus.OK.value()))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+    return objectMapper.readValue(responseContent, MockGen[].class);
   }
 }

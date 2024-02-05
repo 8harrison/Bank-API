@@ -2,6 +2,7 @@ package com.harrison.BankAPI.controller;
 
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -11,7 +12,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harrison.BankAPI.mocks.MockGen;
 import com.harrison.BankAPI.utils.PersonFixtures;
 import com.harrison.BankAPI.utils.SimpleResultHandler;
+import com.harrison.BankAPI.utils.TestHelpers;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -25,6 +28,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,35 +45,45 @@ public class PersonControllerTest {
   @Autowired
   WebApplicationContext wac;
 
+  TestHelpers aux = new TestHelpers();
+
+  MockGen saved;
+
+  MockGen client;
+
   @BeforeEach
-  public void setup() {
+  public void setup() throws Exception {
     this.mockMvc = MockMvcBuilders
         .webAppContextSetup(wac)
         .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
         .alwaysDo(new SimpleResultHandler())
         .build();
+    client = PersonFixtures.person_client.clone();
+    saved = aux.performCreation(client, "/auth/register");
   }
 
   @Test
   public void testRegister() throws Exception {
-    MockGen client = PersonFixtures.person_client;
+    assertNotNull(saved.get("id"), "A resposta deve incluir o id da pessoa criada");
 
-    String url = "/auth/register";
-    String responseContent = mockMvc.perform(post(url)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectToJson(client)))
-        .andExpect(status().isCreated())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andReturn().getResponse().getContentAsString();
+    client.put("id", saved.get("id"));
+    client.remove("password");
 
-    MockGen savedPerson = objectMapper.readValue(responseContent, MockGen.class);
+    assertEquals(client, saved);
+  }
 
-    assertNull(savedPerson.get("id"), "A resposta deve incluir o id da pessoa criada");
+  @Test
+  public void testGetPersonById() throws Exception {
+    String url = "/people/" + saved.get("id");
+    MockGen founded = aux.performFind(url);
 
-    MockGen expectedPerson = new MockGen(client);
-    expectedPerson.put("id", savedPerson.get("id"));
-    expectedPerson.remove("password");
+    assertEquals(saved, founded);
+  }
 
-    assertEquals(expectedPerson, savedPerson);
+  @Test
+  public void testGetAllPeople() throws Exception {
+    Object[] list = new Object[]{saved,
+        aux.performCreation(PersonFixtures.person_client1, "/auth/register")};
+    aux.performFind("/people", list);
   }
 }
