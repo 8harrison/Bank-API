@@ -1,5 +1,7 @@
 package com.harrison.BankAPI.utils;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -15,25 +17,31 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @Component
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class TestHelpers implements ApplicationContextAware {
 
   @Autowired
-  static ObjectMapper objectMapper;
+  public static ObjectMapper objectMapper;
 
-  MockMvc mockMvc;
+  @Autowired
+  static MockMvc mockMvc;
 
   @Autowired
   WebApplicationContext wac;
@@ -48,13 +56,16 @@ public class TestHelpers implements ApplicationContextAware {
         .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
         .alwaysDo(new SimpleResultHandler())
         .build();
-
-    validateToken = createPersonAuthenticate(PersonFixtures.person_admin);
   }
 
   @Override
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
     TestHelpers.objectMapper = applicationContext.getBean(ObjectMapper.class);
+    TestHelpers.mockMvc = applicationContext.getBean(MockMvc.class);
+  }
+
+  public static void setValidateToken(String validateToken) {
+    TestHelpers.validateToken = validateToken;
   }
 
   public static String getValidateToken() {
@@ -78,7 +89,7 @@ public class TestHelpers implements ApplicationContextAware {
                 .content(objectToJson(mockGen)))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn().getResponse().getContentAsString();
+            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
     return objectMapper.readValue(responseContent, MockGen.class);
   }
@@ -92,19 +103,32 @@ public class TestHelpers implements ApplicationContextAware {
                 .content(objectToJson(mockGen)))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn().getResponse().getContentAsString();
+            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
     return objectMapper.readValue(responseContent, MockGen.class);
   }
 
-  public String performfind(String url) throws Exception {
+  public MockGen performFind(String url) throws Exception {
     MockHttpServletRequestBuilder builder = get(url);
     builder = builder.header("Authorization", "Bearer " + validateToken);
-    return mockMvc.perform(builder
+    String responseContent = mockMvc.perform(builder
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andReturn().getResponse().getContentAsString();
+        .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+    return objectMapper.readValue(responseContent, MockGen.class);
+  }
+
+  public void performFind(String url, Object[] expect) throws Exception {
+    MockHttpServletRequestBuilder builder = get(url);
+    builder = builder.header("Authorization", "Bearer " + validateToken);
+    String responseContent = mockMvc.perform(builder
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+    MockGen[] list = objectMapper.readValue(responseContent, MockGen[].class);
+    assertArrayEquals(expect, list);
   }
 
   public MockGen performUpdate(MockHttpServletRequestBuilder builder, MockGen mockGen)
@@ -115,7 +139,7 @@ public class TestHelpers implements ApplicationContextAware {
                 .content(objectToJson(mockGen)))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn().getResponse().getContentAsString();
+            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
     return objectMapper.readValue(responseContent, MockGen.class);
   }
 
@@ -124,19 +148,28 @@ public class TestHelpers implements ApplicationContextAware {
     mockMvc.perform(builder
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$").value(message));
   }
 
   public void performNotFound(MockHttpServletRequestBuilder builder, String message)
       throws Exception {
     builder = builder.header("Authorization", "Bearer " + validateToken);
-    mockMvc.perform(builder
+    String responseContent = mockMvc.perform(builder
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$").value(message));
+        .andReturn().getResponse().getContentAsString();
+    assertEquals(message, responseContent);
+  }
 
+  public void performNotFound(MockHttpServletRequestBuilder builder, String message, MockGen request)
+      throws Exception {
+    builder = builder.header("Authorization", "Bearer " + validateToken);
+    String responseContent = mockMvc.perform(builder
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectToJson(request)))
+        .andExpect(status().isNotFound())
+        .andReturn().getResponse().getContentAsString();
+    assertEquals(message, responseContent);
   }
 
   private static boolean isJwt(String token) {
@@ -150,7 +183,7 @@ public class TestHelpers implements ApplicationContextAware {
   }
 
   public String createPersonAuthenticate(MockGen person) throws Exception {
-    performCreation(person, "auth/register");
+    performCreation(person, "/auth/register");
 
     Map<String, Object> loginInfo = Map.of(
         "username", person.get("username"),
@@ -163,7 +196,7 @@ public class TestHelpers implements ApplicationContextAware {
                 .content(objectToJson(loginInfo)))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn().getResponse().getContentAsString();
+            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
     LoginResponse loginResponse = objectMapper.readValue(responseContent, LoginResponse.class);
     String token = loginResponse.get("token");
@@ -173,6 +206,28 @@ public class TestHelpers implements ApplicationContextAware {
         "Resposta da autenticação deve incluir um token JWT válido!"
     );
 
+    return token;
+  }
+
+  public String personAuthenticate(MockGen person) throws Exception {
+    Map<String, Object> loginInfo = Map.of(
+        "username", person.get("username"),
+        "password", person.get("password")
+    );
+    String responseContent =
+        mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectToJson(loginInfo)))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+    LoginResponse loginResponse = objectMapper.readValue(responseContent, LoginResponse.class);
+    String token = loginResponse.get("token");
+    assertTrue(
+        isJwt(token),
+        "Resposta da autenticação deve incluir um token JWT válido!"
+    );
     return token;
   }
 

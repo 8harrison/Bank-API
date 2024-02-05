@@ -8,7 +8,7 @@ public class PersonFixtures {
   public final static MockGen person_client = new MockGen(Map.of(
       "name", "Moacir Pitagoras",
       "email", "moacir.pit@hotmail.com",
-      "cpf", "12345678",
+      "cpf", "123.456.789-00",
       "username", "MoacirPitagoras",
       "password", "54321",
       "role", "CLIENT"
@@ -16,7 +16,7 @@ public class PersonFixtures {
 
   public final static MockGen person_admin = new MockGen(Map.of(
       "name", "Janio Quadros",
-      "cpf", "65478123",
+      "cpf", "654.781.235-00",
       "email", "janio.quadros@hotmail.com",
       "username", "janioQua",
       "password", "789654",
@@ -26,7 +26,7 @@ public class PersonFixtures {
   public final static MockGen person_client1 = new MockGen(Map.of(
       "username", "caliceJesus",
       "password", "123456",
-      "cpf", "45454448866",
+      "cpf", "454.544.488-66",
       "email", "calice.jesus@hotmail.com",
       "name", "Calice de Jesus",
       "role", "CLIENT"
@@ -35,7 +35,7 @@ public class PersonFixtures {
   public final static MockGen person_client2 = new MockGen(Map.of(
       "username", "juracicandongas",
       "password", "777777",
-      "cpf", "77777777777",
+      "cpf", "777.777.777-77",
       "email", "juraci.candangas@hotmail.com",
       "name", "Juraci Candongas",
       "role", "CLIENT"
@@ -43,7 +43,7 @@ public class PersonFixtures {
 
   public final static MockGen person_admin_1 = new MockGen(Map.of(
       "name", "João Goulart",
-      "cpf", "45654578966",
+      "cpf", "456.545.789-66",
       "email", "jango@hotmail.com",
       "username", "jango",
       "password", "654123",
@@ -52,7 +52,7 @@ public class PersonFixtures {
 
   public final static MockGen person_admin_2 = new MockGen(Map.of(
       "name", "Tarsila do Amaral",
-      "cpf", "41234578955",
+      "cpf", "412.345.789-55",
       "email", "tarsila.ama@hotmail.com",
       "username", "tarsilaama",
       "password", "uhuhuh",
@@ -61,7 +61,7 @@ public class PersonFixtures {
 
   public final static MockGen person_manager = new MockGen(Map.of(
       "name", "Machado de Assis",
-      "cpf", "55566677788",
+      "cpf", "555.666.777-88",
       "email", "assis.machado@hotmail.com",
       "username", "machadassis",
       "password", "hfgdkflehf54594",

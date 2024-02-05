@@ -6,6 +6,7 @@ import java.util.Map;
 public class AddressFixtures {
 
   public final static MockGen client_address1 = new MockGen(Map.of(
+      "id", 1,
       "rua", "Goias",
       "numero", 12,
       "cep", "12345-666"
@@ -24,6 +25,7 @@ public class AddressFixtures {
   ));
 
   public final static MockGen branch_address1 = new MockGen(Map.of(
+      "id", 1,
       "rua", "Turmalina",
       "numero", 25,
       "cep", "12345-222"
