@@ -75,13 +75,13 @@ public class TransactionControllerTest {
         .alwaysDo(new SimpleResultHandler())
         .build();
     managerToken = aux.createPersonAuthenticate(person_manager);
-    perform(branch_1, post("/branches"), CREATED, managerToken);
+    perform(branch_1, post("/branches"), managerToken);
     clientToken = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    perform(person_client1, post("/auth/register"), CREATED,
+    perform(person_client1, post("/auth/register"),
         managerToken);
     account = account_1_request;
-    savedAccount = perform(account, post("/accounts"), CREATED, managerToken);
-    perform(account_2_request, post("/accounts"), CREATED, managerToken);
+    savedAccount = perform(account, post("/accounts"), managerToken);
+    perform(account_2_request, post("/accounts"), managerToken);
   }
 
   @Test
@@ -109,7 +109,7 @@ public class TransactionControllerTest {
 
     for (MockGen transaction : transactions) {
       MockGen savedTransaction = perform(transaction, post("/accounts/1/transactions"),
-          CREATED, clientToken);
+          clientToken);
       list.add(savedTransaction);
     }
     MockGen[] response = performGetAll(get("/accounts/1/transactions"),
@@ -129,7 +129,7 @@ public class TransactionControllerTest {
   @DisplayName("Teste getTransactionById")
   public void testD() throws Exception {
     MockGen expected = perform(transaction_deposito,
-        post("/accounts/1/transactions"), CREATED, clientToken);
+        post("/accounts/1/transactions"), clientToken);
 
     MockGen returnedTransaction = perform(get("/accounts/1/transactions/1"), OK,
         managerToken);
@@ -153,7 +153,7 @@ public class TransactionControllerTest {
   @DisplayName("Teste getTransactionByCode")
   public void testG() throws Exception {
     MockGen expected = perform(transaction_deposito,
-        post("/accounts/1/transactions"), CREATED, clientToken);
+        post("/accounts/1/transactions"), clientToken);
 
     MockGen returnedTransaction = perform(
         get("/accounts/1/transactions/find-by-code?code=" + expected.get("code")),
@@ -180,7 +180,7 @@ public class TransactionControllerTest {
   @DisplayName("Teste deleteTransaction")
   public void testJ() throws Exception {
     MockGen transaction = perform(transaction_deposito,
-        post("/accounts/1/transactions"), CREATED, clientToken);
+        post("/accounts/1/transactions"), clientToken);
 
     perform(delete("/accounts/1/transactions/" + transaction.get("id")),
         managerToken);
@@ -210,7 +210,7 @@ public class TransactionControllerTest {
 
   private void testDeposito() throws Exception {
     MockGen savedtransaction = perform(transaction_deposito,
-        post("/accounts/1/transactions"), CREATED, clientToken);
+        post("/accounts/1/transactions"), clientToken);
     MockGen transaction = transaction_deposito;
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
@@ -223,7 +223,7 @@ public class TransactionControllerTest {
 
   private void testSaque() throws Exception {
     MockGen savedtransaction = perform(transaction_saque,
-        post("/accounts/1/transactions"), CREATED, clientToken);
+        post("/accounts/1/transactions"), clientToken);
     MockGen transaction = transaction_saque;
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
@@ -237,7 +237,7 @@ public class TransactionControllerTest {
   private void testTransferencia() throws Exception {
     MockGen transaction = transaction_transferencia.clone();
     MockGen savedtransaction = perform(transaction,
-        post("/accounts/1/transactions"), CREATED, clientToken);
+        post("/accounts/1/transactions"), clientToken);
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
 
@@ -253,7 +253,7 @@ public class TransactionControllerTest {
   private void testPix() throws Exception {
     MockGen transaction = transaction_pix();
     MockGen savedtransaction = perform(transaction,
-        post("/accounts/1/transactions"), CREATED, clientToken);
+        post("/accounts/1/transactions"), clientToken);
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
 
@@ -293,14 +293,14 @@ public class TransactionControllerTest {
   }
 
   private MockGen perform(MockGen mockGen, MockHttpServletRequestBuilder builder,
-      HttpStatus expectedStatus, String token)
+      String token)
       throws Exception {
     builder = builder.header("Authorization", "Bearer " + token);
     String responseContent =
         mockMvc.perform(builder
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectToJson(mockGen)))
-            .andExpect(status().is(expectedStatus.value()))
+            .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
     return objectMapper.readValue(responseContent, MockGen.class);
