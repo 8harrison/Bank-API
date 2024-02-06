@@ -1,8 +1,5 @@
 package com.harrison.BankAPI.utils;
 
-import com.harrison.BankAPI.exception.InvalidAcessException;
-import com.harrison.BankAPI.models.entity.Account;
-import com.harrison.BankAPI.service.AccountService;
 import com.harrison.BankAPI.service.PersonService;
 import com.harrison.BankAPI.service.TokenService;
 import jakarta.servlet.FilterChain;
@@ -10,13 +7,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.security.Principal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component

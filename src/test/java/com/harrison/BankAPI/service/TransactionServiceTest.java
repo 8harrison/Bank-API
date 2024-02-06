@@ -10,7 +10,9 @@ import static com.harrison.BankAPI.mocks.MockFactory.mockTransaction_saque;
 import static com.harrison.BankAPI.mocks.MockFactory.mockTransaction_transferencia;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.harrison.BankAPI.exception.InsulfficientFoundsException;
 import com.harrison.BankAPI.exception.InvalidTransactionException;
@@ -19,6 +21,7 @@ import com.harrison.BankAPI.models.entity.Account;
 import com.harrison.BankAPI.models.entity.Branch;
 import com.harrison.BankAPI.models.entity.Person;
 import com.harrison.BankAPI.models.entity.Transaction;
+import com.harrison.BankAPI.utils.Calculator;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.FixMethodOrder;
@@ -273,5 +276,11 @@ public class TransactionServiceTest {
     transaction1.setName("Smeagle");
     assertThrows(InvalidTransactionException.class, () ->
         accountService.createTransaction(1L, transaction1));
+  }
+
+  @Test
+  public void testCalculator() {
+    Calculator calculator =  new Calculator();
+    assertTrue(calculator instanceof Calculator);
   }
 }

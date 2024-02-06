@@ -129,7 +129,7 @@
 						</goals>
 						<configuration>
 							<excludes>
-								<exclude>**/models/entity</exclude>
+								<exclude>**/models/entity/*</exclude>
 								<exclude>**/BankApiApplication.*</exclude>
 							</excludes>
 							<rules>
