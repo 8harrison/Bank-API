@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.harrison.BankAPI.exception.InsulfficientFoundsException;
+import com.harrison.BankAPI.exception.InvalidTransactionException;
 import com.harrison.BankAPI.exception.NotFoundException;
 import com.harrison.BankAPI.models.entity.Account;
 import com.harrison.BankAPI.models.entity.Branch;
@@ -80,6 +81,7 @@ public class TransactionServiceTest {
     testTransferenciaAccountIdNotFound();
     testTransferenciaInsulfficientFounds();
     testPixInsulfficientFounds();
+    testInvalidTransactionException();
 
   }
 
@@ -264,5 +266,12 @@ public class TransactionServiceTest {
     assertThrows(InsulfficientFoundsException.class, () ->
         accountService.createTransaction(1L, expected));
 
+  }
+
+  private void testInvalidTransactionException() {
+    Transaction transaction1 = mockTransaction_deposito();
+    transaction1.setName("Smeagle");
+    assertThrows(InvalidTransactionException.class, () ->
+        accountService.createTransaction(1L, transaction1));
   }
 }

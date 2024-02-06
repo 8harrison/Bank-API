@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.harrison.BankAPI.exception.ConflictUsernameException;
 import com.harrison.BankAPI.exception.InvalidCpfException;
 import com.harrison.BankAPI.exception.InvalidEmailException;
 import com.harrison.BankAPI.exception.NotFoundException;
@@ -120,6 +121,15 @@ public class PersonServiceTest {
     String response = objectToJson(allPeople);
 
     assertEquals(expected, response);
+  }
+
+  @Test
+  public void testConflictUsernameException() {
+    Person person1 = mockPerson();
+    person1.setCpf("555.555.555-66");
+    person1.setEmail("arroba@ponto.com");
+    assertThrows(ConflictUsernameException.class, () ->
+        personService.register(person1));
   }
 
 }
