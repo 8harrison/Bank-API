@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.DirtiesContext;
@@ -46,8 +47,6 @@ public class TestHelpers implements ApplicationContextAware {
   @Autowired
   WebApplicationContext wac;
 
-  static String validateToken;
-
   @BeforeEach
   public void setup() throws Exception {
     mockMvc = MockMvcBuilders
@@ -64,14 +63,6 @@ public class TestHelpers implements ApplicationContextAware {
     TestHelpers.mockMvc = applicationContext.getBean(MockMvc.class);
   }
 
-  public static void setValidateToken(String validateToken) {
-    TestHelpers.validateToken = validateToken;
-  }
-
-  public static String getValidateToken() {
-    return validateToken;
-  }
-
   public static String objectToJson(Object object) {
     try {
       return objectMapper.writeValueAsString(object);
@@ -82,21 +73,6 @@ public class TestHelpers implements ApplicationContextAware {
 
   public MockGen performCreation(MockGen mockGen, String url) throws Exception {
     MockHttpServletRequestBuilder builder = post(url);
-    builder = builder.header("Authorization", "Bearer " + validateToken);
-    String responseContent =
-        mockMvc.perform(builder
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectToJson(mockGen)))
-            .andExpect(status().isCreated())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
-    return objectMapper.readValue(responseContent, MockGen.class);
-  }
-
-  public MockGen performCreation(MockGen mockGen) throws Exception {
-    MockHttpServletRequestBuilder builder = post("/accounts");
-    builder = builder.header("Authorization", "Bearer " + validateToken);
     String responseContent =
         mockMvc.perform(builder
                 .contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +86,6 @@ public class TestHelpers implements ApplicationContextAware {
 
   public MockGen performFind(String url) throws Exception {
     MockHttpServletRequestBuilder builder = get(url);
-    builder = builder.header("Authorization", "Bearer " + validateToken);
     String responseContent = mockMvc.perform(builder
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -121,9 +96,8 @@ public class TestHelpers implements ApplicationContextAware {
 
   public void performFind(String url, Object[] expect) throws Exception {
     MockHttpServletRequestBuilder builder = get(url);
-    builder = builder.header("Authorization", "Bearer " + validateToken);
     String responseContent = mockMvc.perform(builder
-        .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
@@ -131,45 +105,13 @@ public class TestHelpers implements ApplicationContextAware {
     assertArrayEquals(expect, list);
   }
 
-  public MockGen performUpdate(MockHttpServletRequestBuilder builder, MockGen mockGen)
-      throws Exception {
-    String responseContent =
-        mockMvc.perform(builder
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectToJson(mockGen)))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-    return objectMapper.readValue(responseContent, MockGen.class);
-  }
-
-  public void performDelete(MockHttpServletRequestBuilder builder, String message)
-      throws Exception {
+  public void perforException(MockGen mockGen, MockHttpServletRequestBuilder builder,
+      String message, HttpStatus status) throws Exception {
     mockMvc.perform(builder
-            .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$").value(message));
-  }
-
-  public void performNotFound(MockHttpServletRequestBuilder builder, String message)
-      throws Exception {
-    builder = builder.header("Authorization", "Bearer " + validateToken);
-    String responseContent = mockMvc.perform(builder
-            .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isNotFound())
-        .andReturn().getResponse().getContentAsString();
-    assertEquals(message, responseContent);
-  }
-
-  public void performNotFound(MockHttpServletRequestBuilder builder, String message, MockGen request)
-      throws Exception {
-    builder = builder.header("Authorization", "Bearer " + validateToken);
-    String responseContent = mockMvc.perform(builder
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectToJson(request)))
-        .andExpect(status().isNotFound())
-        .andReturn().getResponse().getContentAsString();
-    assertEquals(message, responseContent);
+            .content(objectToJson(mockGen)))
+        .andExpect(status().is(status.value()))
+        .andExpect(jsonPath("$").value(message));
   }
 
   private static boolean isJwt(String token) {
