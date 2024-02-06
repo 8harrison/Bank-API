@@ -22,6 +22,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -85,5 +86,35 @@ public class PersonControllerTest {
     Object[] list = new Object[]{saved,
         aux.performCreation(PersonFixtures.person_client1, "/auth/register")};
     aux.performFind("/people", list);
+  }
+
+  @Test
+  public void testUsernameConflicted() throws Exception {
+    MockGen person = PersonFixtures.person_client.clone();
+    person.put("cpf", "111.111.111-11");
+    person.put("email", "qualquercoisa@ponto.com");
+    String message = "Já existe um usuário com este Username!";
+    aux.perforException(person, post("/auth/register"),
+        message, HttpStatus.BAD_REQUEST);
+  }
+
+  @Test
+  public void testInvalidEmailException() throws Exception {
+    MockGen person = PersonFixtures.person_client.clone();
+    person.put("name", "Bozolino");
+    person.put("email", "texto simbolico para teste");
+    String message = "Por favor, digite um email válido!";
+    aux.perforException(person, post("/auth/register"),
+        message, HttpStatus.BAD_REQUEST);
+  }
+
+  @Test
+  public void testInvalidCpfException() throws Exception {
+    MockGen person = PersonFixtures.person_client.clone();
+    person.put("name", "Bozolino");
+    person.put("cpf", "1111111111");
+    String message = "Por favor, digite um CPF válido!";
+    aux.perforException(person, post("/auth/register"),
+        message, HttpStatus.BAD_REQUEST);
   }
 }

@@ -1,30 +1,27 @@
 package com.harrison.BankAPI.controller;
 
-import static com.harrison.BankAPI.mocks.MockGen.toMockGen;
-import static com.harrison.BankAPI.utils.TestHelpers.getValidateToken;
+import static com.harrison.BankAPI.utils.AccountFixtures.*;
+import static com.harrison.BankAPI.utils.BranchFixtures.*;
+import static com.harrison.BankAPI.utils.PersonFixtures.*;
 import static com.harrison.BankAPI.utils.TestHelpers.objectMapper;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
-import static com.harrison.BankAPI.utils.TransactionFixtures.setIdAndCode;
-import static com.harrison.BankAPI.utils.TransactionFixtures.transaction_pix;
-import static com.harrison.BankAPI.utils.TransactionFixtures.transaction_transferencia;
+import static com.harrison.BankAPI.utils.TransactionFixtures.*;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.harrison.BankAPI.mocks.MockGen;
-import com.harrison.BankAPI.utils.AccountFixtures;
-import com.harrison.BankAPI.utils.BranchFixtures;
 import com.harrison.BankAPI.utils.PersonFixtures;
 import com.harrison.BankAPI.utils.SimpleResultHandler;
-import com.harrison.BankAPI.utils.TestHelpers;
-import com.harrison.BankAPI.utils.TransactionFixtures;
+import com.harrison.BankAPI.utils.TestHelpers;;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,14 +74,14 @@ public class TransactionControllerTest {
         .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
         .alwaysDo(new SimpleResultHandler())
         .build();
-    managerToken = aux.createPersonAuthenticate(PersonFixtures.person_manager);
-    perform(BranchFixtures.branch_1, post("/branches"), HttpStatus.CREATED, managerToken);
+    managerToken = aux.createPersonAuthenticate(person_manager);
+    perform(branch_1, post("/branches"), CREATED, managerToken);
     clientToken = aux.createPersonAuthenticate(PersonFixtures.person_client);
-    perform(PersonFixtures.person_client1, post("/auth/register"), HttpStatus.CREATED,
+    perform(person_client1, post("/auth/register"), CREATED,
         managerToken);
-    account = AccountFixtures.account_1_request;
-    savedAccount = perform(account, post("/accounts"), HttpStatus.CREATED, managerToken);
-    perform(AccountFixtures.account_2_request, post("/accounts"), HttpStatus.CREATED, managerToken);
+    account = account_1_request;
+    savedAccount = perform(account, post("/accounts"), CREATED, managerToken);
+    perform(account_2_request, post("/accounts"), CREATED, managerToken);
   }
 
   @Test
@@ -95,14 +92,16 @@ public class TransactionControllerTest {
     testTransferencia();
     testPix();
     testCreateTransactionAccountIdNotFound();
+    testInvalidTransactionException();
+    testInsulfficientFoundsenException();
   }
 
   @Test
   @DisplayName("Teste getAll transactions")
   public void testB() throws Exception {
     Set<MockGen> transactions = Set.of(
-        TransactionFixtures.transaction_deposito,
-        TransactionFixtures.transaction_saque,
+        transaction_deposito,
+        transaction_saque,
         transaction_transferencia,
         transaction_pix()
     );
@@ -110,10 +109,10 @@ public class TransactionControllerTest {
 
     for (MockGen transaction : transactions) {
       MockGen savedTransaction = perform(transaction, post("/accounts/1/transactions"),
-          HttpStatus.CREATED, clientToken);
+          CREATED, clientToken);
       list.add(savedTransaction);
     }
-    MockGen[] response = performGetAll(get("/accounts/1/transactions"), HttpStatus.OK,
+    MockGen[] response = performGetAll(get("/accounts/1/transactions"),
         managerToken);
     MockGen[] expected = list.toArray(new MockGen[0]);
     assertArrayEquals(expected, response);
@@ -122,17 +121,17 @@ public class TransactionControllerTest {
   @Test
   @DisplayName("Teste getAll transactions not found account id")
   public void testC() throws Exception {
-    perform(get("/accounts/100/transactions"), HttpStatus.NOT_FOUND,
+    perform(get("/accounts/100/transactions"), NOT_FOUND,
         managerToken);
   }
 
   @Test
   @DisplayName("Teste getTransactionById")
   public void testD() throws Exception {
-    MockGen expected = perform(TransactionFixtures.transaction_deposito,
-        post("/accounts/1/transactions"), HttpStatus.CREATED, clientToken);
+    MockGen expected = perform(transaction_deposito,
+        post("/accounts/1/transactions"), CREATED, clientToken);
 
-    MockGen returnedTransaction = perform(get("/accounts/1/transactions/1"), HttpStatus.OK,
+    MockGen returnedTransaction = perform(get("/accounts/1/transactions/1"), OK,
         managerToken);
 
     assertEquals(expected, returnedTransaction);
@@ -141,24 +140,24 @@ public class TransactionControllerTest {
   @Test
   @DisplayName("Teste getTransactionById not found transactionId")
   public void testE() throws Exception {
-    perform(get("/accounts/1/transactions/100"), HttpStatus.NOT_FOUND, managerToken);
+    perform(get("/accounts/1/transactions/100"), NOT_FOUND, managerToken);
   }
 
   @Test
   @DisplayName("Teste getTransactionById not found accountId")
   public void testF() throws Exception {
-    perform(get("/accounts/100/transactions/1"), HttpStatus.NOT_FOUND, managerToken);
+    perform(get("/accounts/100/transactions/1"), NOT_FOUND, managerToken);
   }
 
   @Test
   @DisplayName("Teste getTransactionByCode")
   public void testG() throws Exception {
-    MockGen expected = perform(TransactionFixtures.transaction_deposito,
-        post("/accounts/1/transactions"), HttpStatus.CREATED, clientToken);
+    MockGen expected = perform(transaction_deposito,
+        post("/accounts/1/transactions"), CREATED, clientToken);
 
     MockGen returnedTransaction = perform(
         get("/accounts/1/transactions/find-by-code?code=" + expected.get("code")),
-        HttpStatus.OK, managerToken);
+        OK, managerToken);
 
     assertEquals(expected, returnedTransaction);
   }
@@ -167,21 +166,21 @@ public class TransactionControllerTest {
   @DisplayName("Teste getTransactionByCode not found code")
   public void testH() throws Exception {
     perform(get("/accounts/1/transactions/find-by-code?code=0000-d"),
-        HttpStatus.NOT_FOUND, managerToken);
+        NOT_FOUND, managerToken);
   }
 
   @Test
   @DisplayName("Teste getTransactionByCode not found accountId")
   public void testI() throws Exception {
     perform(get("/accounts/100/transactions/find-by-code?code=0001-d"),
-        HttpStatus.NOT_FOUND, managerToken);
+        NOT_FOUND, managerToken);
   }
 
   @Test
   @DisplayName("Teste deleteTransaction")
   public void testJ() throws Exception {
-    MockGen transaction = perform(TransactionFixtures.transaction_deposito,
-        post("/accounts/1/transactions"), HttpStatus.CREATED, clientToken);
+    MockGen transaction = perform(transaction_deposito,
+        post("/accounts/1/transactions"), CREATED, clientToken);
 
     perform(delete("/accounts/1/transactions/" + transaction.get("id")),
         managerToken);
@@ -190,13 +189,13 @@ public class TransactionControllerTest {
   @Test
   @DisplayName("Teste deleteTransaction not found transactionId")
   public void testK() throws Exception {
-    perform(delete("/accounts/1/transactions/100"), HttpStatus.NOT_FOUND, managerToken);
+    perform(delete("/accounts/1/transactions/100"), NOT_FOUND, managerToken);
   }
 
   @Test
   @DisplayName("Teste deleteTransaction not found accountId")
   public void testL() throws Exception {
-    perform(delete("/accounts/100/transactions/1"), HttpStatus.NOT_FOUND, managerToken);
+    perform(delete("/accounts/100/transactions/1"), NOT_FOUND, managerToken);
   }
 
   @Test
@@ -204,17 +203,18 @@ public class TransactionControllerTest {
   public void testM() throws Exception {
     MockGen transfer = transaction_transferencia.clone();
     transfer.put("cpf", "111.111.111.55");
-    perform(transfer, post("/accounts/1/transactions"),
-        HttpStatus.NOT_FOUND, clientToken);
+    String message = "CPF não encontrado!";
+    performException(transfer, post("/accounts/1/transactions"),
+        NOT_FOUND, message, clientToken);
   }
 
   private void testDeposito() throws Exception {
-    MockGen savedtransaction = perform(TransactionFixtures.transaction_deposito,
-        post("/accounts/1/transactions"), HttpStatus.CREATED, clientToken);
-    MockGen transaction = TransactionFixtures.transaction_deposito;
+    MockGen savedtransaction = perform(transaction_deposito,
+        post("/accounts/1/transactions"), CREATED, clientToken);
+    MockGen transaction = transaction_deposito;
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
-    MockGen account = perform(get("/accounts/1"), HttpStatus.OK, managerToken);
+    MockGen account = perform(get("/accounts/1"), OK, managerToken);
     MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
 
     assertEquals(expectedTransaction, savedtransaction);
@@ -222,12 +222,12 @@ public class TransactionControllerTest {
   }
 
   private void testSaque() throws Exception {
-    MockGen savedtransaction = perform(TransactionFixtures.transaction_saque,
-        post("/accounts/1/transactions"), HttpStatus.CREATED, clientToken);
-    MockGen transaction = TransactionFixtures.transaction_saque;
+    MockGen savedtransaction = perform(transaction_saque,
+        post("/accounts/1/transactions"), CREATED, clientToken);
+    MockGen transaction = transaction_saque;
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
-    MockGen account = perform(get("/accounts/1"), HttpStatus.OK, managerToken);
+    MockGen account = perform(get("/accounts/1"), OK, managerToken);
     MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
 
     assertEquals(expectedTransaction, savedtransaction);
@@ -237,12 +237,12 @@ public class TransactionControllerTest {
   private void testTransferencia() throws Exception {
     MockGen transaction = transaction_transferencia.clone();
     MockGen savedtransaction = perform(transaction,
-        post("/accounts/1/transactions"), HttpStatus.CREATED, clientToken);
+        post("/accounts/1/transactions"), CREATED, clientToken);
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
 
-    MockGen account1 = perform(get("/accounts/1"), HttpStatus.OK, managerToken);
-    MockGen account2 = perform(get("/accounts/2"), HttpStatus.OK, managerToken);
+    MockGen account1 = perform(get("/accounts/1"), OK, managerToken);
+    MockGen account2 = perform(get("/accounts/2"), OK, managerToken);
     MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
     transaction.remove("cpf");
     assertEquals(expectedTransaction, savedtransaction);
@@ -253,12 +253,12 @@ public class TransactionControllerTest {
   private void testPix() throws Exception {
     MockGen transaction = transaction_pix();
     MockGen savedtransaction = perform(transaction,
-        post("/accounts/1/transactions"), HttpStatus.CREATED, clientToken);
+        post("/accounts/1/transactions"), CREATED, clientToken);
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
 
-    MockGen account1 = perform(get("/accounts/1"), HttpStatus.OK, managerToken);
-    MockGen account2 = perform(get("/accounts/2"), HttpStatus.OK, managerToken);
+    MockGen account1 = perform(get("/accounts/1"), OK, managerToken);
+    MockGen account2 = perform(get("/accounts/2"), OK, managerToken);
     MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
     transaction.remove("cpf");
 
@@ -267,22 +267,35 @@ public class TransactionControllerTest {
     assertEquals(2000.00, account2.get("saldo"));
   }
 
+  private void testInvalidTransactionException() throws Exception {
+    MockGen transaction = transaction_pix();
+    transaction.put("name", "teste");
+    String message = "Transação inválida!";
+    performException(transaction,
+        post("/accounts/1/transactions"), BAD_REQUEST,
+        message, clientToken);
+  }
+
+  private void testInsulfficientFoundsenException() throws Exception {
+    MockGen transaction = transaction_pix();
+    transaction.put("valor", 50000.0);
+    String message = "Saldo Insulficiente!";
+    performException(transaction,
+        post("/accounts/1/transactions"), BAD_REQUEST,
+        message, clientToken);
+  }
+
   private void testCreateTransactionAccountIdNotFound() throws Exception {
-    perform(TransactionFixtures.transaction_deposito,
-        post("/accounts/100/transactions"), HttpStatus.NOT_FOUND, clientToken);
+    String message = "Conta de id 100 não encontrada!";
+    performException(transaction_deposito,
+        post("/accounts/100/transactions"),
+        NOT_FOUND, message, clientToken);
   }
 
   private MockGen perform(MockGen mockGen, MockHttpServletRequestBuilder builder,
       HttpStatus expectedStatus, String token)
       throws Exception {
     builder = builder.header("Authorization", "Bearer " + token);
-    if (expectedStatus == HttpStatus.NOT_FOUND) {
-      mockMvc.perform(builder
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectToJson(mockGen)))
-          .andExpect(status().isNotFound());
-      return null;
-    }
     String responseContent =
         mockMvc.perform(builder
                 .contentType(MediaType.APPLICATION_JSON)
@@ -293,11 +306,22 @@ public class TransactionControllerTest {
     return objectMapper.readValue(responseContent, MockGen.class);
   }
 
+  private void performException(MockGen mockGen, MockHttpServletRequestBuilder builder,
+      HttpStatus status, String message, String token)
+      throws Exception {
+    builder = builder.header("Authorization", "Bearer " + token);
+    mockMvc.perform(builder
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectToJson(mockGen)))
+        .andExpect(status().is(status.value()))
+        .andExpect(jsonPath("$").value(message));
+  }
+
   private MockGen perform(MockHttpServletRequestBuilder builder, HttpStatus expectedStatus,
       String token)
       throws Exception {
     builder = builder.header("Authorization", "Bearer " + token);
-    if (expectedStatus != HttpStatus.OK) {
+    if (expectedStatus != OK) {
       mockMvc.perform(builder
               .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isNotFound());
@@ -320,14 +344,14 @@ public class TransactionControllerTest {
         .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
   }
 
-  private MockGen[] performGetAll(MockHttpServletRequestBuilder builder, HttpStatus ok,
+  private MockGen[] performGetAll(MockHttpServletRequestBuilder builder,
       String token)
       throws Exception {
     builder = builder.header("Authorization", "Bearer " + token);
     String responseContent =
         mockMvc.perform(builder
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().is(HttpStatus.OK.value()))
+            .andExpect(status().is(OK.value()))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
     return objectMapper.readValue(responseContent, MockGen[].class);
