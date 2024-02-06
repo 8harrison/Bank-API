@@ -1,5 +1,6 @@
 package com.harrison.BankAPI.service;
 
+import com.harrison.BankAPI.exception.ConflictUsernameException;
 import com.harrison.BankAPI.exception.InvalidCpfException;
 import com.harrison.BankAPI.exception.InvalidEmailException;
 import com.harrison.BankAPI.exception.NotFoundException;
@@ -48,6 +49,7 @@ public class PersonService implements UserDetailsService {
     person.setPassword(hashedPassword);
     verifyCpf(person.getCpf());
     verifyEmail(person.getEmail());
+    isUserNameConflict(person.getUsername());
     return personRepository.save(person);
   }
 
@@ -73,15 +75,24 @@ public class PersonService implements UserDetailsService {
     return personRepository.findAll();
   }
 
-  private static void verifyCpf(String cpf) {
+  private void verifyCpf(String cpf) {
     if (!cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) {
       throw new InvalidCpfException("Por favor, digite um CPF válido!");
     }
   }
 
-  private static void verifyEmail(String email) {
+  private void verifyEmail(String email) {
     if (!email.matches("[^1-9][a-zA-Z.0-9]+@[a-zA-Z]+.[a-zA-Z]+$")) {
      throw new InvalidEmailException("Por favor, digite um email válido!");
     }
+  }
+
+  private void isUserNameConflict(String username) {
+    List<Person> people = personRepository.findAll();
+    people.forEach(person -> {
+      if (person.getUsername().equals(username)) {
+        throw new ConflictUsernameException("Já existe um usuário com este Username!");
+      }
+    });
   }
 }

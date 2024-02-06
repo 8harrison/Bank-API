@@ -18,7 +18,7 @@ public class GerenciadorExceptionController {
 
   @ExceptionHandler({InsulfficientFoundsException.class, InvalidTransactionException.class,
       InvalidCpfException.class, InvalidEmailException.class, ConflictUsernameException.class})
-  public ResponseEntity<String> handleInsulfficientFoundsException(RuntimeException exception) {
+  public ResponseEntity<String> handleBadRequest(RuntimeException exception) {
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
         .body(exception.getMessage());

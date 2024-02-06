@@ -42,10 +42,6 @@ public class AuthenticationController {
   @PostMapping("/register")
   public ResponseEntity<PersonDto> register(@RequestBody Person person) {
     UserDetails userDetails = personService.loadUserByUsername(person.getUsername());
-    if (userDetails != null) {
-      throw new ConflictUsernameException("Não foi possível cadastrar, nome de usuário já existe!");
-    }
-
     Person saved = personService.register(person);
     return ResponseEntity.status(HttpStatus.CREATED).body(toDto(saved));
   }
