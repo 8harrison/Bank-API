@@ -59,6 +59,8 @@ public class BranchServiceTest {
   private void testCreateBranch() {
     branch.setId(saved.getId());
     branch.setCode(saved.getCode());
+    branch.setCreatedDate(saved.getCreatedDate());
+    branch.setLastModifiedDate(saved.getLastModifiedDate());
     String response = objectToJson(saved);
     String expected = objectToJson(branch);
     assertEquals(expected, response);

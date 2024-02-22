@@ -72,7 +72,7 @@ public class BranchControllerTest {
 
   @Test
   void testCreate() {
-    setIdAndCode(saved, branch);
+    setParams(saved, branch);
     assertEquals(branch, saved);
   }
 
@@ -202,5 +202,14 @@ public class BranchControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
     return objectMapper.readValue(responseContent, MockGen[].class);
+  }
+
+  private MockGen setParams(MockGen response, MockGen request) {
+    request.put("id", response.get("id"));
+    request.put("code", response.get("code"));
+    request.put("address", response.get("address"));
+    request.put("createdDate", response.get("createdDate"));
+    request.put("lastModifiedDate", response.get("lastModifiedDate"));
+    return request;
   }
 }
