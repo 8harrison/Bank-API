@@ -85,7 +85,6 @@ public class TransactionServiceTest {
     testTransferenciaInsulfficientFounds();
     testPixInsulfficientFounds();
     testInvalidTransactionException();
-
   }
 
   @Test
@@ -173,9 +172,8 @@ public class TransactionServiceTest {
     Transaction deposito = mockTransaction_deposito();
     deposito.setTitular(account1);
     Transaction created = accountService.createTransaction(1L, deposito);
+    setParams(deposito, created);
 
-    deposito.setId(created.getId());
-    deposito.setCode(created.getCode());
     String expected = objectToJson(deposito);
     String response = objectToJson(created);
 
@@ -188,9 +186,8 @@ public class TransactionServiceTest {
     Transaction saque = mockTransaction_saque();
     saque.setTitular(account1);
     Transaction created = accountService.createTransaction(1L, saque);
+    setParams(saque, created);
 
-    saque.setId(created.getId());
-    saque.setCode(created.getCode());
     String expected = objectToJson(saque);
     String response = objectToJson(created);
 
@@ -220,12 +217,11 @@ public class TransactionServiceTest {
     Transaction transferencia = mockTransaction_transferencia();
     transferencia.setTitular(account1);
     transferencia.setRecebedor(account2);
-    Transaction transaction = accountService.createTransaction(1L, transferencia);
+    Transaction created = accountService.createTransaction(1L, transferencia);
+    setParams(transferencia, created);
 
-    transferencia.setId(transaction.getId());
-    transferencia.setCode(transaction.getCode());
     String expected = objectToJson(transferencia);
-    String response = objectToJson(transaction);
+    String response = objectToJson(created);
 
     assertEquals(expected, response);
     assertEquals(20000.00, account1.getSaldo());
@@ -248,12 +244,11 @@ public class TransactionServiceTest {
     Transaction pix = mockTransaction_pix();
     pix.setTitular(account1);
     pix.setRecebedor(account2);
-    Transaction transaction = accountService.createTransaction(1L, pix);
+    Transaction created = accountService.createTransaction(1L, pix);
+    setParams(pix, created);
 
-    pix.setId(transaction.getId());
-    pix.setCode(transaction.getCode());
     String expected = objectToJson(pix);
-    String response = objectToJson(transaction);
+    String response = objectToJson(created);
 
     assertEquals(expected, response);
     assertEquals(19500.00, account1.getSaldo());
@@ -282,5 +277,11 @@ public class TransactionServiceTest {
   public void testCalculator() {
     Calculator calculator =  new Calculator();
     assertTrue(calculator instanceof Calculator);
+  }
+
+  private void setParams(Transaction request, Transaction created) {
+    request.setId(created.getId());
+    request.setCode(created.getCode());
+    request.setCreatedDate(created.getCreatedDate());
   }
 }

@@ -215,9 +215,9 @@ public class TransactionControllerTest {
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
     MockGen account = perform(get("/accounts/1"), OK, managerToken);
-    MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
+    setParams(transaction, savedtransaction);
 
-    assertEquals(expectedTransaction, savedtransaction);
+    assertEquals(transaction, savedtransaction);
     assertEquals(11000.00, account.get("saldo"));
   }
 
@@ -228,9 +228,9 @@ public class TransactionControllerTest {
 
     assertNotNull(savedtransaction.get("id"), "A resposta deve conter o id da transação criada");
     MockGen account = perform(get("/accounts/1"), OK, managerToken);
-    MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
+    setParams(transaction, savedtransaction);
 
-    assertEquals(expectedTransaction, savedtransaction);
+    assertEquals(transaction, savedtransaction);
     assertEquals(10500.00, account.get("saldo"));
   }
 
@@ -243,9 +243,9 @@ public class TransactionControllerTest {
 
     MockGen account1 = perform(get("/accounts/1"), OK, managerToken);
     MockGen account2 = perform(get("/accounts/2"), OK, managerToken);
-    MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
+    setParams(transaction, savedtransaction);
     transaction.remove("cpf");
-    assertEquals(expectedTransaction, savedtransaction);
+    assertEquals(transaction, savedtransaction);
     assertEquals(10000.00, account1.get("saldo"));
     assertEquals(1500.00, account2.get("saldo"));
   }
@@ -259,10 +259,10 @@ public class TransactionControllerTest {
 
     MockGen account1 = perform(get("/accounts/1"), OK, managerToken);
     MockGen account2 = perform(get("/accounts/2"), OK, managerToken);
-    MockGen expectedTransaction = setIdAndCode(savedtransaction, transaction);
+    setParams(transaction, savedtransaction);
     transaction.remove("cpf");
 
-    assertEquals(expectedTransaction, savedtransaction);
+    assertEquals(transaction, savedtransaction);
     assertEquals(9500.00, account1.get("saldo"));
     assertEquals(2000.00, account2.get("saldo"));
   }
@@ -355,5 +355,11 @@ public class TransactionControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
     return objectMapper.readValue(responseContent, MockGen[].class);
+  }
+
+  private void setParams(MockGen request, MockGen response) {
+    request.put("id", response.get("id"));
+    request.put("code", response.get("code"));
+    request.put("createdDate", response.get("createdDate"));
   }
 }
