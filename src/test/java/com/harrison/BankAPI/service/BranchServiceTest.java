@@ -71,8 +71,8 @@ public class BranchServiceTest {
 
   private void testGetById() {
     Branch founded = branchService.getById(saved.getId());
-    MockGen expected = MockGen.toMockGen(saved);
-    MockGen response = MockGen.toMockGen(founded);
+    String expected = objectToJson(saved);
+    String response = objectToJson(founded);
 
     assertEquals(expected, response);
   }
