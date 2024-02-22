@@ -1,23 +1,23 @@
 package com.harrison.BankAPI.models.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = "people")
+@EntityListeners(AuditingEntityListener.class)
 public class Person implements UserDetails {
 
   @Id
@@ -45,6 +45,14 @@ public class Person implements UserDetails {
   @ManyToMany(mappedBy = "people")
   @JsonIgnore
   private List<Branch> branches;
+
+  @CreatedDate
+  @JsonProperty("created_date")
+  private LocalDate createdDate;
+
+  @LastModifiedDate
+  @JsonProperty("last_modified_date")
+  private LocalDate lastModifiedDate;
 
   public Person() {
   }
@@ -159,5 +167,21 @@ public class Person implements UserDetails {
 
   public void setRole(String role) {
     this.role = role;
+  }
+
+  public LocalDate getCreatedDate() {
+    return createdDate;
+  }
+
+  public void setCreatedDate(LocalDate createdDate) {
+    this.createdDate = createdDate;
+  }
+
+  public LocalDate getLastModifiedDate() {
+    return lastModifiedDate;
+  }
+
+  public void setLastModifiedDate(LocalDate lastModifiedDate) {
+    this.lastModifiedDate = lastModifiedDate;
   }
 }

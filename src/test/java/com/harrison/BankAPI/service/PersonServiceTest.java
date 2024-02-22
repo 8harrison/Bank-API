@@ -49,8 +49,7 @@ public class PersonServiceTest {
   @Test
   public void testRegister() {
     String response = objectToJson(saved);
-    person.setId(saved.getId());
-    person.setPassword(saved.getPassword());
+    setParamps();
     String expect = objectToJson(person);
 
     assertEquals(expect, response);
@@ -130,6 +129,13 @@ public class PersonServiceTest {
     person1.setEmail("arroba@ponto.com");
     assertThrows(ConflictUsernameException.class, () ->
         personService.register(person1));
+  }
+
+  private void setParamps() {
+    person.setId(saved.getId());
+    person.setPassword(saved.getPassword());
+    person.setCreatedDate(saved.getCreatedDate());
+    person.setLastModifiedDate(saved.getLastModifiedDate());
   }
 
 }

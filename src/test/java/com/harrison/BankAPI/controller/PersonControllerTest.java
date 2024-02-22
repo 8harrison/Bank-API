@@ -66,10 +66,7 @@ public class PersonControllerTest {
   @Test
   public void testRegister() throws Exception {
     assertNotNull(saved.get("id"), "A resposta deve incluir o id da pessoa criada");
-
-    client.put("id", saved.get("id"));
-    client.remove("password");
-
+    setParams();
     assertEquals(client, saved);
   }
 
@@ -116,5 +113,12 @@ public class PersonControllerTest {
     String message = "Por favor, digite um CPF válido!";
     aux.perforException(person, post("/auth/register"),
         message, HttpStatus.BAD_REQUEST);
+  }
+
+  private void setParams() {
+    client.put("id", saved.get("id"));
+    client.remove("password");
+    client.put("createdDate", saved.get("createdDate"));
+    client.put("lastModifiedDate", saved.get("lastModifiedDate"));
   }
 }
