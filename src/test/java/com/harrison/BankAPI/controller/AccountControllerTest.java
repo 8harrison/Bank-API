@@ -85,7 +85,7 @@ public class AccountControllerTest {
     assertNotNull(savedAccount.get("id"), "A resposta deve incluir o id da conta criada!");
     assertNotNull(savedAccount.get("code"), "A resposta deve incluir o código da conta!");
     MockGen expectedAccount = account_1_response;
-    expectedAccount = setIdAndCode(expectedAccount, savedAccount);
+    setParams(expectedAccount);
     expectedAccount.put("address", null);
     assertEquals(expectedAccount, savedAccount);
   }
@@ -168,9 +168,11 @@ public class AccountControllerTest {
     perform(address, put("/accounts/100/address"), HttpStatus.NOT_FOUND, token);
   }
 
-  private MockGen setIdAndCode(MockGen request, MockGen response) {
-    request.put("id", response.get("id"));
-    request.put("code", response.get("code"));
+  private MockGen setParams(MockGen request) {
+    request.put("id", savedAccount.get("id"));
+    request.put("code", savedAccount.get("code"));
+    request.put("createdDate", savedAccount.get("createdDate"));
+    request.put("lastModifiedDate", savedAccount.get("lastModifiedDate"));
     return request;
   }
 

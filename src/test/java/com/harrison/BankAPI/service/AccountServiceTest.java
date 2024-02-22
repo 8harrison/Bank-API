@@ -54,16 +54,11 @@ public class AccountServiceTest {
     branch = branchService.create(mockBranch_1());
     person = personService.register(mockPerson());
     saved = savedAccount();
-
-    String test = "festa da salsicha";
   }
   @Test
   public void testCreateAccount() {
-    account.setId(saved.getId());
-    account.setCode(saved.getCode());
-    MockGen response = MockGen.toMockGen(saved);
-    MockGen expect = MockGen.toMockGen(account);
-    assertEquals(expect, response);
+    setParams();
+    assertEquals(account, saved);
   }
 
   private Account savedAccount() {
@@ -167,5 +162,12 @@ public class AccountServiceTest {
 
     assertThrows(NotFoundException.class, () ->
         accountService.setAddress(100L, mockAddress()));
+  }
+
+  private void setParams() {
+    account.setId(saved.getId());
+    account.setCode(saved.getCode());
+    account.setCreatedDate(saved.getCreatedDate());
+    account.setLastModifiedDate(saved.getLastModifiedDate());
   }
 }

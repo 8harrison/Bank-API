@@ -65,7 +65,8 @@ public class AccountService {
 
   public Account updateAccount(Long id, Account account) {
     String branchCode = account.getBranch().getCode();
-    verifyAccount(id);
+    Account founded = verifyAccount(id);
+    account.setCreatedDate(founded.getCreatedDate());
     Branch branch = verifyBranch(branchCode);
     branch.getAccounts().add(account);
     branchRepository.save(branch);

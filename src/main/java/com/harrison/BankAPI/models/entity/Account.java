@@ -1,23 +1,19 @@
 package com.harrison.BankAPI.models.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "accounts")
+@EntityListeners(AuditingEntityListener.class)
 public class Account {
 
   @Id
@@ -46,6 +42,14 @@ public class Account {
 
   @OneToOne(mappedBy = "account", cascade = CascadeType.ALL)
   private Address address;
+
+  @CreatedDate
+  @JsonProperty("created_date")
+  private LocalDate createdDate;
+
+  @LastModifiedDate
+  @JsonProperty("last_modified_date")
+  private LocalDate lastModifiedDate;
 
   public Account() {
   }
@@ -120,5 +124,21 @@ public class Account {
 
   public void setAddress(Address address) {
     this.address = address;
+  }
+
+  public LocalDate getCreatedDate() {
+    return createdDate;
+  }
+
+  public void setCreatedDate(LocalDate createdDate) {
+    this.createdDate = createdDate;
+  }
+
+  public LocalDate getLastModifiedDate() {
+    return lastModifiedDate;
+  }
+
+  public void setLastModifiedDate(LocalDate lastModifiedDate) {
+    this.lastModifiedDate = lastModifiedDate;
   }
 }
