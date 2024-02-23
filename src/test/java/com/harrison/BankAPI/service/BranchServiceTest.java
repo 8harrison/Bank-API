@@ -66,6 +66,8 @@ public class BranchServiceTest {
     branch.setCode(saved.getCode());
     branch.setCreatedDate(saved.getCreatedDate());
     branch.setLastModifiedDate(saved.getLastModifiedDate());
+    branch.setCreatedBy(saved.getCreatedBy());
+    branch.setLastModifiedBy(saved.getLastModifiedBy());
     String response = objectToJson(saved);
     String expected = objectToJson(branch);
     assertEquals(expected, response);
@@ -92,8 +94,6 @@ public class BranchServiceTest {
     Branch branch3 = branchService.create(mockBranch_3());
     List<Branch> branches = List.of(saved, branch2, branch3);
     List<Branch> response = branchService.getAll();
-    System.out.println(objectToJson(branches));
-    System.out.println(objectToJson(response));
     assertEquals(objectToJson(branches), objectToJson(response));
   }
 

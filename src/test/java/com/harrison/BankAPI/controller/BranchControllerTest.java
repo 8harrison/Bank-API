@@ -210,6 +210,8 @@ public class BranchControllerTest {
     request.put("address", response.get("address"));
     request.put("createdDate", response.get("createdDate"));
     request.put("lastModifiedDate", response.get("lastModifiedDate"));
+    request.put("createdBy", response.get("createdBy"));
+    request.put("lastModifiedBy", response.get("lastModifiedBy"));
     return request;
   }
 }
