@@ -7,16 +7,19 @@ import com.harrison.BankAPI.models.entity.Branch;
 import java.time.LocalDate;
 import java.util.List;
 
-public record BranchDto(Long id, String name, String code, Address address, LocalDate createdDate, LocalDate lastModifiedDate) {
+public record BranchDto(Long id, String name, String code, Address address, LocalDate createdDate,
+                        LocalDate lastModifiedDate, String createdBy, String lastModifiedBy) {
 
-  public static BranchDto toDto(Branch branch) {
-    return new BranchDto(
-        branch.getId(),
-        branch.getName(),
-        branch.getCode(),
-        branch.getAddress(),
-        branch.getCreatedDate(),
-        branch.getLastModifiedDate()
-    );
-  }
+    public static BranchDto toDto(Branch branch) {
+        return new BranchDto(
+                branch.getId(),
+                branch.getName(),
+                branch.getCode(),
+                branch.getAddress(),
+                branch.getCreatedDate(),
+                branch.getLastModifiedDate(),
+                branch.getCreatedBy(),
+                branch.getLastModifiedBy()
+        );
+    }
 }
