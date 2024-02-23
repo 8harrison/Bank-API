@@ -18,12 +18,17 @@ import com.harrison.BankAPI.utils.BranchFixtures;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class BranchServiceTest {
 
   @Autowired
@@ -87,7 +92,8 @@ public class BranchServiceTest {
     Branch branch3 = branchService.create(mockBranch_3());
     List<Branch> branches = List.of(saved, branch2, branch3);
     List<Branch> response = branchService.getAll();
-
+    System.out.println(objectToJson(branches));
+    System.out.println(objectToJson(response));
     assertEquals(objectToJson(branches), objectToJson(response));
   }
 
