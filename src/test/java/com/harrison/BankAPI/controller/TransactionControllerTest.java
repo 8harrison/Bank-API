@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.harrison.BankAPI.mocks.MockGen;
 import com.harrison.BankAPI.utils.PersonFixtures;
 import com.harrison.BankAPI.utils.SimpleResultHandler;
-import com.harrison.BankAPI.utils.TestHelpers;;
+import com.harrison.BankAPI.utils.TestHelpers;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +108,7 @@ public class TransactionControllerTest {
     List<MockGen> list = new ArrayList<>();
 
     for (MockGen transaction : transactions) {
-      MockGen savedTransaction = perform(transaction, post("/accounts/1/transactions"),
+      MockGen savedTransaction = perform(transaction, post("/accounts/" + savedAccount.get("id") + "/transactions"),
           clientToken);
       list.add(savedTransaction);
     }
