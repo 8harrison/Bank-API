@@ -108,6 +108,7 @@ public class TransactionControllerTest {
     List<MockGen> list = new ArrayList<>();
 
     for (MockGen transaction : transactions) {
+      System.out.println(objectToJson(transaction));
       MockGen savedTransaction = perform(transaction, post("/accounts/" + savedAccount.get("id") + "/transactions"),
           clientToken);
       list.add(savedTransaction);
