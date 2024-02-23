@@ -99,7 +99,7 @@ public class TransactionControllerTest {
   @Test
   @DisplayName("Teste getAll transactions")
   public void testB() throws Exception {
-    Set<MockGen> transactions = Set.of(
+    List<MockGen> transactions = List.of(
         transaction_deposito,
         transaction_saque,
         transaction_transferencia,
@@ -108,7 +108,6 @@ public class TransactionControllerTest {
     List<MockGen> list = new ArrayList<>();
 
     for (MockGen transaction : transactions) {
-      System.out.println(objectToJson(transaction));
       MockGen savedTransaction = perform(transaction, post("/accounts/" + savedAccount.get("id") + "/transactions"),
           clientToken);
       list.add(savedTransaction);
