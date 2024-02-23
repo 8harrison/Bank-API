@@ -169,5 +169,7 @@ public class AccountServiceTest {
     account.setCode(saved.getCode());
     account.setCreatedDate(saved.getCreatedDate());
     account.setLastModifiedDate(saved.getLastModifiedDate());
+    account.setCreatedBy(saved.getCreatedBy());
+    account.setModifiedBy(saved.getModifiedBy());
   }
 }

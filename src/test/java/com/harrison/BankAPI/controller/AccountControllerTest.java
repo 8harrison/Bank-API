@@ -173,6 +173,8 @@ public class AccountControllerTest {
     request.put("code", savedAccount.get("code"));
     request.put("createdDate", savedAccount.get("createdDate"));
     request.put("lastModifiedDate", savedAccount.get("lastModifiedDate"));
+    request.put("createdBy", savedAccount.get("createdBy"));
+    request.put("modifiedBy", savedAccount.get("modifiedBy"));
     return request;
   }
 
