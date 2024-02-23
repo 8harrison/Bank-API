@@ -67,6 +67,7 @@ public class AccountService {
     String branchCode = account.getBranch().getCode();
     Account founded = verifyAccount(id);
     account.setCreatedDate(founded.getCreatedDate());
+    account.setCreatedBy(founded.getCreatedBy());
     Branch branch = verifyBranch(branchCode);
     branch.getAccounts().add(account);
     branchRepository.save(branch);

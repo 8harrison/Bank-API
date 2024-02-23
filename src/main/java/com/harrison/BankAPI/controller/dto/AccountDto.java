@@ -7,7 +7,7 @@ import com.harrison.BankAPI.models.entity.Branch;
 import java.time.LocalDate;
 
 public record AccountDto(Long id, String name, Double saldo, String code, Address address, LocalDate createdDate,
-                         LocalDate lastModifiedDate) {
+                         LocalDate lastModifiedDate, String createdBy, String modifiedBy) {
 
     public static AccountDto toDto(Account account) {
         return new AccountDto(
@@ -17,7 +17,9 @@ public record AccountDto(Long id, String name, Double saldo, String code, Addres
                 account.getCode(),
                 account.getAddress(),
                 account.getCreatedDate(),
-                account.getLastModifiedDate()
+                account.getLastModifiedDate(),
+                account.getCreatedBy(),
+                account.getModifiedBy()
         );
     }
 
