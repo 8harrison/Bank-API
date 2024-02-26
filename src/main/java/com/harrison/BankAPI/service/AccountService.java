@@ -13,6 +13,8 @@ import com.harrison.BankAPI.models.repository.BranchRepository;
 import com.harrison.BankAPI.models.repository.PersonRepository;
 import com.harrison.BankAPI.models.repository.TransactionRepository;
 import com.harrison.BankAPI.models.entity.Address;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,6 +70,7 @@ public class AccountService {
     Account founded = verifyAccount(id);
     account.setCreatedDate(founded.getCreatedDate());
     account.setCreatedBy(founded.getCreatedBy());
+    account.setPerson(founded.getPerson());
     Branch branch = verifyBranch(branchCode);
     branch.getAccounts().add(account);
     branchRepository.save(branch);
@@ -80,8 +83,14 @@ public class AccountService {
     return "Conta excluída com sucesso!";
   }
 
-  public Transaction createTransaction(Long id, Transaction transaction) {
-    verifyAccount(id);
+  public Transaction createTransaction(Long id, Transaction transaction, String cpf) {
+    Account titular = verifyAccount(id);
+    transaction.setTitular(titular);
+    if (cpf != null) {
+      Person person = verifyCpf(cpf);
+      Account recebedor = person.getAccount();
+      transaction.setRecebedor(recebedor);
+    }
     return setCode(transaction);
   }
 
@@ -101,6 +110,10 @@ public class AccountService {
 
   public List<Transaction> getAllTransactions(Long accountId) {
     return verifyAccount(accountId).getTransactions();
+  }
+
+  public List<Transaction> getTransactionsByPeriod(Long accountId, LocalDate start, LocalDate end) {
+    return transactionRepository.getTransactionsByPeriod(accountId, start, end);
   }
 
   public String deleteTransaction(Long accountId, Long transactionId) {
@@ -129,6 +142,14 @@ public class AccountService {
     Optional<Person> person = personRepository.findById(id);
     if (person.isEmpty()) {
       throw new NotFoundException("Pessoa de id %s não encontrada".formatted(id));
+    }
+    return person.get();
+  }
+
+  private Person verifyCpf(String cpf) {
+    Optional<Person> person = personRepository.findByCpf(cpf);
+    if (person.isEmpty()) {
+      throw new NotFoundException("Pessoa de CPF %s não encontrada!".formatted(cpf));
     }
     return person.get();
   }
