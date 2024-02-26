@@ -3,6 +3,8 @@ package com.harrison.BankAPI.utils;
 import com.harrison.BankAPI.mocks.MockGen;
 import java.util.Map;
 
+import static com.harrison.BankAPI.mocks.MockFactory.mockPerson_1;
+
 public class TransactionFixtures {
 
 
@@ -19,7 +21,7 @@ public class TransactionFixtures {
   public final static MockGen transaction_transferencia = new MockGen(Map.of(
         "name", "transferencia",
         "valor", 500.0,
-        "cpf", PersonFixtures.person_client1.get("cpf")
+        "cpf", mockPerson_1().getCpf()
     ));
 
 
@@ -27,13 +29,7 @@ public class TransactionFixtures {
     return new MockGen(Map.of(
         "name", "pix",
         "valor", 500.0,
-        "cpf", PersonFixtures.person_client1.get("cpf")
+        "cpf", mockPerson_1().getCpf()
     ));
-  }
-
-  public static MockGen setIdAndCode(MockGen response, MockGen request) {
-    request.put("id", response.get("id"));
-    request.put("code", response.get("code"));
-    return request;
   }
 }

@@ -129,6 +129,7 @@ public class AccountControllerTest {
   @Test
   public void testUpdateAccount() throws Exception {
     savedAccount.put("code", "0002-00001");
+    savedAccount.put("cpf", account_1_request.get("cpf"));
     MockGen returnedAccount = perform(savedAccount, put("/accounts/" + savedAccount.get("id")),
         OK, token);
     assertEquals(savedAccount, returnedAccount);
@@ -175,6 +176,7 @@ public class AccountControllerTest {
     request.put("lastModifiedDate", savedAccount.get("lastModifiedDate"));
     request.put("createdBy", savedAccount.get("createdBy"));
     request.put("modifiedBy", savedAccount.get("modifiedBy"));
+    request.put("cpf", savedAccount.get("cpf"));
     return request;
   }
 
