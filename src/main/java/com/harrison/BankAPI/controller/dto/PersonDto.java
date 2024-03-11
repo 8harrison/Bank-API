@@ -1,6 +1,7 @@
 package com.harrison.BankAPI.controller.dto;
 
 import com.harrison.BankAPI.models.entity.Person;
+import com.harrison.BankAPI.utils.AuthTypes;
 
 import java.time.LocalDate;
 

@@ -2,6 +2,7 @@ package com.harrison.BankAPI.models.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.harrison.BankAPI.utils.AuthTypes;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -59,14 +60,14 @@ public class Person implements UserDetails {
 
 
   public Person(Long id, String name, String email, String cpf, String username, String password,
-      String role, List<Branch> branches, Account account) {
+                AuthTypes role, List<Branch> branches, Account account) {
     this.id = id;
     this.name = name;
     this.email = email;
     this.cpf = cpf;
     this.username = username;
     this.password = password;
-    this.role = role;
+    this.role = role.name();
     this.branches = branches;
     this.account = account;
   }
