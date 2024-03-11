@@ -81,7 +81,7 @@ public class MockFactory {
 
   public static Transaction mockTransaction_transferencia() {
     Transaction transaction = new Transaction();
-    transaction.setName(DOC);
+    transaction.setName(TED);
     transaction.setValor(500.00);
     return transaction;
   }

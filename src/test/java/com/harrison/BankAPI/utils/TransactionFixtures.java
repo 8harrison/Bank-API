@@ -19,7 +19,7 @@ public class TransactionFixtures {
   ));
 
   public final static MockGen transaction_transferencia = new MockGen(Map.of(
-        "name", "DOC",
+        "name", "TED",
         "valor", 500.0,
         "cpf", mockPerson_1().getCpf()
     ));

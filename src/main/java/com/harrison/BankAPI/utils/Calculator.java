@@ -24,7 +24,7 @@ public class Calculator {
         throw new InsulfficientFoundsException("Saldo insulficiente!");
     }
 
-    private static Map<String, Account> transferencia(Transaction transaction) {
+    private static Map<String, Account> TED(Transaction transaction) {
         Account titular = transaction.getTitular();
         if (verificaFundos(titular, transaction.getValor())) {
             titular.setSaldo(titular.getSaldo() - transaction.getValor());
@@ -50,8 +50,7 @@ public class Calculator {
         return switch (transaction.getName()) {
             case DEPOSITO -> deposito(transaction);
             case SAQUE -> saque(transaction);
-            case DOC -> transferencia(transaction);
-            case TED -> null;
+            case TED -> TED(transaction);
             case PIX -> pix(transaction);
         };
     }

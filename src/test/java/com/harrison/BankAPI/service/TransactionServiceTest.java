@@ -83,11 +83,11 @@ public class TransactionServiceTest {
     public void testCreateTransaction() {
         testDeposito();
         testSaque();
-        testTranseferencia();
+        testTED();
         testPix();
         testSaqueInsulfficientFounds();
-        testTransferenciaAccountIdNotFound();
-        testTransferenciaInsulfficientFounds();
+        testTEDAccountIdNotFound();
+        testTEDInsulfficientFounds();
         testPixInsulfficientFounds();
     }
 
@@ -211,7 +211,7 @@ public class TransactionServiceTest {
 
     }
 
-    private void testTransferenciaAccountIdNotFound() {
+    private void testTEDAccountIdNotFound() {
         Transaction saque = mockTransaction_saque();
 
         assertThrows(NotFoundException.class, () ->
@@ -219,7 +219,7 @@ public class TransactionServiceTest {
 
     }
 
-    private void testTranseferencia() {
+    private void testTED() {
         Transaction transferencia = mockTransaction_transferencia();
         transferencia.setTitular(account1);
         transferencia.setRecebedor(account2);
@@ -238,7 +238,7 @@ public class TransactionServiceTest {
 
     }
 
-    private void testTransferenciaInsulfficientFounds() {
+    private void testTEDInsulfficientFounds() {
         Transaction expected = mockTransaction_transferencia();
         expected.setTitular(account1);
         expected.setRecebedor(account2);
