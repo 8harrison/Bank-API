@@ -109,7 +109,6 @@ public class TransactionControllerTest {
         testTransferencia();
         testPix();
         testCreateTransactionAccountIdNotFound();
-        testInvalidTransactionException();
         testInsulfficientFoundsenException();
     }
 
@@ -329,15 +328,6 @@ public class TransactionControllerTest {
         assertEquals(transaction, savedtransaction);
         assertEquals(9500.00, account1.get("saldo"));
         assertEquals(2000.00, account2.get("saldo"));
-    }
-
-    private void testInvalidTransactionException() throws Exception {
-        MockGen transaction = transaction_pix();
-        transaction.put("name", "teste");
-        String message = "Transação inválida!";
-        performException(transaction,
-                post("/accounts/1/transactions"), BAD_REQUEST,
-                message, clientToken);
     }
 
     private void testInsulfficientFoundsenException() throws Exception {

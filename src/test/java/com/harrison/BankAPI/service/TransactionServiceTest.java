@@ -89,7 +89,6 @@ public class TransactionServiceTest {
         testTransferenciaAccountIdNotFound();
         testTransferenciaInsulfficientFounds();
         testPixInsulfficientFounds();
-        testInvalidTransactionException();
     }
 
     @Test
@@ -279,13 +278,6 @@ public class TransactionServiceTest {
         assertThrows(InsulfficientFoundsException.class, () ->
                 accountService.createTransaction(1L, expected, cpf));
 
-    }
-
-    private void testInvalidTransactionException() {
-        Transaction transaction1 = mockTransaction_deposito();
-        transaction1.setName("Smeagle");
-        assertThrows(InvalidTransactionException.class, () ->
-                accountService.createTransaction(1L, transaction1, null));
     }
 
     @Test

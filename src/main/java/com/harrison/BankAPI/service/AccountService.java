@@ -172,7 +172,7 @@ public class AccountService {
             num = 1;
         }
         StringBuilder code = new StringBuilder("" + num);
-        while (code.length() < 5) {
+        while (code.length() < 7) {
             code.insert(0, "0");
         }
         return code.toString();
@@ -202,14 +202,13 @@ public class AccountService {
         String code = generateCode(account);
         code = account.getBranch().getCode() + "-" + code;
         account.setCode(code);
-        Account created = accountRepository.save(account);
-        return  created;
+        return accountRepository.save(account);
     }
 
     private Transaction setCode(Transaction transaction) {
         Map<String, Account> accounts = identifier(transaction);
         String code = generateCode(transaction);
-        char letter = transaction.getName().charAt(0);
+        String letter = transaction.getName().name().substring(0, 2);
         code += "-" + letter;
         transaction.setCode(code);
         accounts.values().forEach(account -> {

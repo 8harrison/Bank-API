@@ -1,6 +1,7 @@
 package com.harrison.BankAPI.models.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.harrison.BankAPI.utils.TransactionTypes;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,7 +17,7 @@ public class Transaction {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  private String name;
+  private TransactionTypes name;
 
   private Double valor;
 
@@ -37,14 +38,14 @@ public class Transaction {
   public Transaction() {
   }
 
-  public Transaction(Long id, String name, Double valor, Account titular) {
+  public Transaction(Long id, TransactionTypes name, Double valor, Account titular) {
     this.id = id;
     this.name = name;
     this.valor = valor;
     this.titular = titular;
   }
 
-  public Transaction(Long id, String name, Double valor, Account titular, Account recebedor) {
+  public Transaction(Long id, TransactionTypes name, Double valor, Account titular, Account recebedor) {
     this.id = id;
     this.name = name;
     this.valor = valor;
@@ -68,11 +69,11 @@ public class Transaction {
     this.id = id;
   }
 
-  public String getName() {
+  public TransactionTypes getName() {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(TransactionTypes name) {
     this.name = name;
   }
 

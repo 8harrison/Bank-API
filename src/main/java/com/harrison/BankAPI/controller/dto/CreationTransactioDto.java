@@ -1,8 +1,9 @@
 package com.harrison.BankAPI.controller.dto;
 
 import com.harrison.BankAPI.models.entity.Transaction;
+import com.harrison.BankAPI.utils.TransactionTypes;
 
-public record CreationTransactioDto(String name, Double valor, String cpf) {
+public record CreationTransactioDto(TransactionTypes name, Double valor, String cpf) {
 
   public static Transaction toTransaction(CreationTransactioDto dto) {
     Transaction transaction = new Transaction();

@@ -9,25 +9,25 @@ public class TransactionFixtures {
 
 
   public final static MockGen transaction_deposito = new MockGen(Map.of(
-      "name", "deposito",
+      "name", "DEPOSITO",
       "valor", 10000.0
   ));
 
   public final static MockGen transaction_saque = new MockGen(Map.of(
-      "name", "saque",
+      "name", "SAQUE",
       "valor", 500.0
   ));
 
   public final static MockGen transaction_transferencia = new MockGen(Map.of(
-        "name", "transferencia",
+        "name", "DOC",
         "valor", 500.0,
         "cpf", mockPerson_1().getCpf()
     ));
 
 
-  public final static MockGen transaction_pix() {
+  public static MockGen transaction_pix() {
     return new MockGen(Map.of(
-        "name", "pix",
+        "name", "PIX",
         "valor", 500.0,
         "cpf", mockPerson_1().getCpf()
     ));
