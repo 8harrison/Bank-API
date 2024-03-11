@@ -1,7 +1,6 @@
 package com.harrison.BankAPI.utils;
 
 import com.harrison.BankAPI.exception.InsulfficientFoundsException;
-import com.harrison.BankAPI.exception.InvalidTransactionException;
 import com.harrison.BankAPI.models.entity.Account;
 import com.harrison.BankAPI.models.entity.Transaction;
 

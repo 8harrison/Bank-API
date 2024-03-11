@@ -1,46 +1,29 @@
 package com.harrison.BankAPI.service;
 
-import static com.harrison.BankAPI.mocks.MockFactory.mockAccount;
-import static com.harrison.BankAPI.mocks.MockFactory.mockBranch_1;
-import static com.harrison.BankAPI.mocks.MockFactory.mockPerson;
-import static com.harrison.BankAPI.mocks.MockFactory.mockPerson_1;
-import static com.harrison.BankAPI.mocks.MockFactory.mockTransaction_deposito;
-import static com.harrison.BankAPI.mocks.MockFactory.mockTransaction_pix;
-import static com.harrison.BankAPI.mocks.MockFactory.mockTransaction_saque;
-import static com.harrison.BankAPI.mocks.MockFactory.mockTransaction_transferencia;
-import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.harrison.BankAPI.exception.InsulfficientFoundsException;
-import com.harrison.BankAPI.exception.InvalidTransactionException;
 import com.harrison.BankAPI.exception.NotFoundException;
 import com.harrison.BankAPI.models.entity.Account;
 import com.harrison.BankAPI.models.entity.Branch;
 import com.harrison.BankAPI.models.entity.Person;
 import com.harrison.BankAPI.models.entity.Transaction;
 import com.harrison.BankAPI.utils.Calculator;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.springframework.core.annotation.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.harrison.BankAPI.mocks.MockFactory.*;
+import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ActiveProfiles("test")
 @SpringBootTest
