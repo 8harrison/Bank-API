@@ -5,6 +5,7 @@ import com.harrison.BankAPI.models.entity.Address;
 import com.harrison.BankAPI.models.entity.Branch;
 import com.harrison.BankAPI.models.entity.Person;
 import com.harrison.BankAPI.models.entity.Transaction;
+import com.harrison.BankAPI.utils.AccountTypes;
 
 public class MockFactory {
 
@@ -33,7 +34,7 @@ public class MockFactory {
   public static Account mockAccount() {
     Account account = new Account();
     account.setSaldo(1000.00);
-    account.setName("poupança");
+    account.setName(AccountTypes.POUPANCA);
     return account;
   }
 

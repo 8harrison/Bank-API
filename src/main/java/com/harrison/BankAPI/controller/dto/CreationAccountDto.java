@@ -1,5 +1,7 @@
 package com.harrison.BankAPI.controller.dto;
 
-public record CreationAccountDto(String cpf, String name, Double saldo, String branchCode) {
+import com.harrison.BankAPI.utils.AccountTypes;
+
+public record CreationAccountDto(String cpf, AccountTypes name, Double saldo, String branchCode) {
 
 }

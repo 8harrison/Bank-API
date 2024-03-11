@@ -11,12 +11,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.harrison.BankAPI.exception.NotFoundException;
 import com.harrison.BankAPI.mocks.MockGen;
-import com.harrison.BankAPI.models.entity.Account;
-import com.harrison.BankAPI.models.entity.Address;
-import com.harrison.BankAPI.models.entity.Branch;
-import com.harrison.BankAPI.models.entity.Person;
+import com.harrison.BankAPI.models.entity.*;
 import com.harrison.BankAPI.utils.AddressFixtures;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -32,144 +36,182 @@ import org.springframework.test.context.ActiveProfiles;
 @Execution(ExecutionMode.CONCURRENT)
 public class AccountServiceTest {
 
-  @Autowired
-  AccountService accountService;
-  @Autowired
-  BranchService branchService;
+    @Autowired
+    AccountService accountService;
+    @Autowired
+    BranchService branchService;
 
-  @Autowired
-  PersonService personService;
+    @Autowired
+    PersonService personService;
 
-  Account saved;
+    @Autowired
+    BankService bankService;
 
-  Account account;
+    Account saved;
 
-  Branch branch;
+    Account account;
 
-  Person person;
+    Branch branch;
 
-  @BeforeEach
-  public void setup() {
-    account = mockAccount();
-    branch = branchService.create(mockBranch_1());
-    person = personService.register(mockPerson());
-    saved = savedAccount();
-  }
-  @Test
-  public void testCreateAccount() {
-    setParams();
-    assertEquals(account, saved);
-  }
+    Person person;
 
-  private Account savedAccount() {
-    account.setPerson(person);
-    return accountService.createAccount(account, branch.getCode());
-  }
+    Timer timer = new Timer();
 
-  @Test
-  public void testCreateAccountPersonNotFound() {
-    person.setId(100L);
-    account.setPerson(person);
-    assertThrows(NotFoundException.class, () ->
-        accountService.createAccount(account, branch.getCode()));
-  }
+    @BeforeEach
+    public void setup() {
+        account = mockAccount();
+        branch = branchService.create(mockBranch_1());
+        person = personService.register(mockPerson());
+        saved = savedAccount();
+        Bank bank = new Bank();
+        bank.setName("PoupaBank");
+        bank.setIncomeTax(0.005);
+        bankService.create(bank);
+    }
 
-  @Test
-  public void testCreateAccountBranchNotFound() {
-    branch.setCode("0000");
-    assertThrows(NotFoundException.class, () ->
-        accountService.createAccount(account, branch.getCode()));
-  }
+    @Test
+    public void testCreateAccount() throws InterruptedException {
+        setParams();
+        assertEquals(account, saved);
+        timer(0.005);
+    }
 
-  @Test
-  public void testGetAllAccounts() {
-    Person savedPerson = personService.register(mockPerson_1());
-    Account account1 = mockAccount();
-    account1.setPerson(savedPerson);
-    Account savedAccount = accountService.createAccount(account1, branch.getCode());
-    List<Account> list = List.of(saved, savedAccount);
-    List<Account> allAccounts = accountService.getAll();
-    String expected = objectToJson(list);
-    String response = objectToJson(allAccounts);
+    @Test
+    public void testUpdateTax() throws InterruptedException {
+        double tax = 0.007;
+        Bank bank = bankService.updateTax(1L, tax);
+        timer(tax);
+    }
 
-    assertEquals(expected, response);
-  }
 
-  @Test
-  public void testGetById() {
-    Account founded = accountService.getById(saved.getId());
-    String expected = objectToJson(saved);
-    String response = objectToJson(founded);
+    public void timer(Double tax) throws InterruptedException {
+        int base = 6000;
+        int delay = base * 10;
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                Double saldo = saved.getSaldo();
+                Account founded = accountService.getById(saved.getId());
+                double expected = saldo * (1 + tax);
+                BigDecimal bd = new BigDecimal(expected).setScale(2, RoundingMode.HALF_EVEN);
+                Double response = founded.getSaldo();
+                assertEquals(bd.doubleValue(), response);
+            }
+        };
+        timer.schedule(task, delay);
+        Thread.sleep(base * 20);
 
-    assertEquals(expected, response);
-  }
+    }
 
-  @Test
-  public void testByGetIdNotFound() {
-    assertThrows(NotFoundException.class, () ->
-        accountService.getById(100L));
-  }
+    private Account savedAccount() {
+        account.setPerson(person);
+        return accountService.createAccount(account, branch.getCode());
+    }
 
-  @Test
-  public void testGetByCode() {
-    Account founded = accountService.getByCode(saved.getCode());
-    String expected = objectToJson(saved);
-    String response = objectToJson(founded);
+    @Test
+    public void testCreateAccountPersonNotFound() {
+        person.setId(100L);
+        account.setPerson(person);
+        assertThrows(NotFoundException.class, () ->
+                accountService.createAccount(account, branch.getCode()));
+    }
 
-    assertEquals(expected, response);
-  }
+    @Test
+    public void testCreateAccountBranchNotFound() {
+        branch.setCode("0000");
+        assertThrows(NotFoundException.class, () ->
+                accountService.createAccount(account, branch.getCode()));
+    }
 
-  @Test
-  public void testGetByCodeNotFound() {
-    assertThrows(NotFoundException.class, () ->
-        accountService.getByCode("0000-00000"));
-  }
+    @Test
+    public void testGetAllAccounts() {
+        Person savedPerson = personService.register(mockPerson_1());
+        Account account1 = mockAccount();
+        account1.setPerson(savedPerson);
+        Account savedAccount = accountService.createAccount(account1, branch.getCode());
+        List<Account> list = List.of(saved, savedAccount);
+        List<Account> allAccounts = accountService.getAll();
+        String expected = objectToJson(list);
+        String response = objectToJson(allAccounts);
 
-  @Test
-  public void testUpdateAccount() {
-    Account founded = accountService.getById(1L);
-    founded.getPerson().setPassword("abcde");
-    founded.getPerson().setEmail("moacir.antunes@gmail.com");
-    founded.getPerson().setUsername("moacirantunes");
-    Account updated = accountService.updateAccount(saved.getId(), founded);
+        assertEquals(expected, response);
+    }
 
-    String expected = objectToJson(founded);
-    String response = objectToJson(updated);
+    @Test
+    public void testGetById() {
+        Account founded = accountService.getById(saved.getId());
+        String expected = objectToJson(saved);
+        String response = objectToJson(founded);
 
-    assertEquals(expected, response);
-  }
+        assertEquals(expected, response);
+    }
 
-  @Test
-  public void testDeleteAccount() {
-    String message = accountService.deleteAccount(saved.getId());
+    @Test
+    public void testByGetIdNotFound() {
+        assertThrows(NotFoundException.class, () ->
+                accountService.getById(100L));
+    }
 
-    assertEquals("Conta excluída com sucesso!", message);
-  }
+    @Test
+    public void testGetByCode() {
+        Account founded = accountService.getByCode(saved.getCode());
+        String expected = objectToJson(saved);
+        String response = objectToJson(founded);
 
-  @Test
-  public void testSetAdress() {
-    Address address = mockAddress();
-    saved.setAddress(address);
-    Account account = accountService.setAddress(saved.getId(), address);
-    String expected = objectToJson(saved);
-    String response = objectToJson(account);
-    assertEquals(expected, response);
-  }
+        assertEquals(expected, response);
+    }
 
-  @Test
-  public void testSetAddressNotFoundAccountId() {
-    MockGen address = AddressFixtures.client_address1;
+    @Test
+    public void testGetByCodeNotFound() {
+        assertThrows(NotFoundException.class, () ->
+                accountService.getByCode("0000-00000"));
+    }
 
-    assertThrows(NotFoundException.class, () ->
-        accountService.setAddress(100L, mockAddress()));
-  }
+    @Test
+    public void testUpdateAccount() {
+        Account founded = accountService.getById(1L);
+        founded.getPerson().setPassword("abcde");
+        founded.getPerson().setEmail("moacir.antunes@gmail.com");
+        founded.getPerson().setUsername("moacirantunes");
+        Account updated = accountService.updateAccount(saved.getId(), founded);
 
-  private void setParams() {
-    account.setId(saved.getId());
-    account.setCode(saved.getCode());
-    account.setCreatedDate(saved.getCreatedDate());
-    account.setLastModifiedDate(saved.getLastModifiedDate());
-    account.setCreatedBy(saved.getCreatedBy());
-    account.setModifiedBy(saved.getModifiedBy());
-  }
+        String expected = objectToJson(founded);
+        String response = objectToJson(updated);
+
+        assertEquals(expected, response);
+    }
+
+    @Test
+    public void testDeleteAccount() {
+        String message = accountService.deleteAccount(saved.getId());
+
+        assertEquals("Conta excluída com sucesso!", message);
+    }
+
+    @Test
+    public void testSetAdress() {
+        Address address = mockAddress();
+        saved.setAddress(address);
+        Account account = accountService.setAddress(saved.getId(), address);
+        String expected = objectToJson(saved);
+        String response = objectToJson(account);
+        assertEquals(expected, response);
+    }
+
+    @Test
+    public void testSetAddressNotFoundAccountId() {
+        MockGen address = AddressFixtures.client_address1;
+
+        assertThrows(NotFoundException.class, () ->
+                accountService.setAddress(100L, mockAddress()));
+    }
+
+    private void setParams() {
+        account.setId(saved.getId());
+        account.setCode(saved.getCode());
+        account.setCreatedDate(saved.getCreatedDate());
+        account.setLastModifiedDate(saved.getLastModifiedDate());
+        account.setCreatedBy(saved.getCreatedBy());
+        account.setModifiedBy(saved.getModifiedBy());
+    }
 }

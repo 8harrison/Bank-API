@@ -3,10 +3,11 @@ package com.harrison.BankAPI.controller.dto;
 import com.harrison.BankAPI.models.entity.Account;
 import com.harrison.BankAPI.models.entity.Address;
 import com.harrison.BankAPI.models.entity.Branch;
+import com.harrison.BankAPI.utils.AccountTypes;
 
 import java.time.LocalDate;
 
-public record AccountDto(Long id, String name, Double saldo, String code, Address address, LocalDate createdDate,
+public record AccountDto(Long id, AccountTypes name, Double saldo, String code, Address address, LocalDate createdDate,
                          LocalDate lastModifiedDate, String createdBy, String modifiedBy, String cpf) {
 
     public static AccountDto toDto(Account account) {

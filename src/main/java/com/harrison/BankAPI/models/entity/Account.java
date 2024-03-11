@@ -2,6 +2,7 @@ package com.harrison.BankAPI.models.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.harrison.BankAPI.utils.AccountTypes;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -31,7 +32,7 @@ public class Account {
   @JoinColumn(name = "branch_id")
   private Branch branch;
 
-  private String name;
+  private AccountTypes name;
 
   private Double saldo;
 
@@ -59,10 +60,12 @@ public class Account {
   @LastModifiedBy
   private String modifiedBy;
 
+  private LocalDate lastIncome;
+
   public Account() {
   }
 
-  public Account(Long id, Person person, String name, Double saldo, Address address) {
+  public Account(Long id, Person person, AccountTypes name, Double saldo, Address address) {
     this.id = id;
     this.person = person;
     this.name = name;
@@ -110,11 +113,11 @@ public class Account {
     this.branch = branch;
   }
 
-  public String getName() {
+  public AccountTypes getName() {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(AccountTypes name) {
     this.name = name;
   }
 
@@ -164,5 +167,13 @@ public class Account {
 
   public void setModifiedBy(String modifiedBy) {
     this.modifiedBy = modifiedBy;
+  }
+
+  public LocalDate getLastIncome() {
+    return lastIncome;
+  }
+
+  public void setLastIncome(LocalDate lastIncome) {
+    this.lastIncome = lastIncome;
   }
 }
