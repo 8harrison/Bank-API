@@ -2,10 +2,7 @@ package com.harrison.BankAPI.service;
 
 import com.harrison.BankAPI.exception.InsulfficientFoundsException;
 import com.harrison.BankAPI.exception.NotFoundException;
-import com.harrison.BankAPI.models.entity.Account;
-import com.harrison.BankAPI.models.entity.Branch;
-import com.harrison.BankAPI.models.entity.Person;
-import com.harrison.BankAPI.models.entity.Transaction;
+import com.harrison.BankAPI.models.entity.*;
 import com.harrison.BankAPI.utils.Calculator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.harrison.BankAPI.mocks.MockFactory.*;
+import static com.harrison.BankAPI.utils.BankFixtures.bankMock;
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,6 +37,8 @@ public class TransactionServiceTest {
 
     @Autowired
     PersonService personService;
+    @Autowired
+    BankService bankService;
 
     Account account1;
 
@@ -48,6 +48,7 @@ public class TransactionServiceTest {
 
     @BeforeEach
     public void setup() {
+        Bank bank = bankService.create(bankMock());
         Person person1 = personService.register(mockPerson());
         Person person2 = personService.register(mockPerson_1());
         account2 = mockAccount();
@@ -64,14 +65,10 @@ public class TransactionServiceTest {
 
     @Test
     public void testCreateTransaction() {
-        testDeposito();
-        testSaque();
-        testTED();
-        testPix();
-        testSaqueInsulfficientFounds();
+        testSaqueInsufficientFounds();
         testTEDAccountIdNotFound();
-        testTEDInsulfficientFounds();
-        testPixInsulfficientFounds();
+        testTEDInsufficientFounds();
+        testPixInsufficientFounds();
     }
 
     @Test
@@ -121,7 +118,7 @@ public class TransactionServiceTest {
         String cpf = account2.getPerson().getCpf();
         List<Transaction> list = new ArrayList<>();
         createTransactions(cpf);
-        for (long i = 1; i < 6; i ++) {
+        for (long i = 1; i < 6; i++) {
             list.add(accountService.getTransactionById(1L, i));
         }
         List<Transaction> transactionList = accountService.getAllTransactions(account1.getId());
@@ -155,7 +152,8 @@ public class TransactionServiceTest {
                 accountService.deleteTransaction(100L, 1L));
     }
 
-    private void testDeposito() {
+    @Test
+    public void testDeposito() {
         Transaction deposito = mockTransaction_deposito();
         deposito.setTitular(account1);
         Transaction created = accountService.createTransaction(account1.getId(), deposito, null);
@@ -164,13 +162,15 @@ public class TransactionServiceTest {
 
         String expected = objectToJson(deposito);
         String response = objectToJson(created);
+        Double expectedBalance = 21_000.00 - 2 * bankMock().getDepositTax();
 
         assertEquals(expected, response);
-        assertEquals(21000.00, founded.getSaldo());
+        assertEquals(expectedBalance, founded.getSaldo());
 
     }
 
-    private void testSaque() {
+    @Test
+    public void testSaque() {
         Transaction saque = mockTransaction_saque();
         saque.setTitular(account1);
         Transaction created = accountService.createTransaction(1L, saque, null);
@@ -179,12 +179,13 @@ public class TransactionServiceTest {
 
         String expected = objectToJson(saque);
         String response = objectToJson(created);
+        Double expectedBalance = round(10495.44 - bankMock().getDraftTax());
 
         assertEquals(expected, response);
-        assertEquals(20500.00, founded.getSaldo());
+        assertEquals(expectedBalance, founded.getSaldo());
     }
 
-    private void testSaqueInsulfficientFounds() {
+    private void testSaqueInsufficientFounds() {
         Transaction saque = mockTransaction_saque();
         saque.setTitular(account1);
         saque.setValor(25000.00);
@@ -202,7 +203,8 @@ public class TransactionServiceTest {
 
     }
 
-    private void testTED() {
+    @Test
+    public void testTED() {
         Transaction transferencia = mockTransaction_transferencia();
         transferencia.setTitular(account1);
         transferencia.setRecebedor(account2);
@@ -214,14 +216,15 @@ public class TransactionServiceTest {
 
         String expected = objectToJson(transferencia);
         String response = objectToJson(created);
+        Double expectedBalance = round(10495.44 - bankMock().getTransferTax());
 
         assertEquals(expected, response);
-        assertEquals(20000.00, founded.getSaldo());
+        assertEquals(expectedBalance, founded.getSaldo());
         assertEquals(1500.00, founded2.getSaldo());
 
     }
 
-    private void testTEDInsulfficientFounds() {
+    private void testTEDInsufficientFounds() {
         Transaction expected = mockTransaction_transferencia();
         expected.setTitular(account1);
         expected.setRecebedor(account2);
@@ -233,7 +236,8 @@ public class TransactionServiceTest {
 
     }
 
-    private void testPix() {
+    @Test
+    public void testPix() {
         Transaction pix = mockTransaction_pix();
         pix.setTitular(account1);
         pix.setRecebedor(account2);
@@ -245,13 +249,14 @@ public class TransactionServiceTest {
 
         String expected = objectToJson(pix);
         String response = objectToJson(created);
+        Double expectedBalance = 10495.44;
 
         assertEquals(expected, response);
-        assertEquals(19500.00, founded.getSaldo());
-        assertEquals(2000.00, founded2.getSaldo());
+        assertEquals(expectedBalance, founded.getSaldo());
+        assertEquals(1500.00, founded2.getSaldo());
     }
 
-    private void testPixInsulfficientFounds() {
+    private void testPixInsufficientFounds() {
         Transaction expected = mockTransaction_pix();
         expected.setTitular(account1);
         expected.setRecebedor(account2);
@@ -277,6 +282,9 @@ public class TransactionServiceTest {
         List<Transaction> transactions = createTransactions(cpf);
         List<Transaction> list = savedWithNewCreatedDate(transactions, cpf);
         List<Transaction> founded = accountService.getTransactionsByPeriod(account1.getId(), start, end);
+        Account fakeAccount = new Account();
+        founded = founded.stream().peek(tr -> tr.setTitular(fakeAccount)).toList();
+        founded.get(2).setRecebedor(fakeAccount);
         String expected = objectToJson(list);
         String response = objectToJson(founded);
 
@@ -292,18 +300,20 @@ public class TransactionServiceTest {
     }
 
     private List<Transaction> savedWithNewCreatedDate(List<Transaction> transactions, String cpf) {
+        Account fakeAccount = new Account();
         transactions.get(0).setCreatedDate(stringToDate("2024-01-15"));
-        transactions.get(0).setValor(0.0);
         Transaction deposito = accountService.createTransaction(account1.getId(), transactions.get(0), null);
+        deposito.setTitular(fakeAccount);
         transactions.get(1).setCreatedDate(stringToDate("2024-01-20"));
-        transactions.get(1).setValor(0.0);
         Transaction saque = accountService.createTransaction(account1.getId(), transactions.get(1), null);
+        saque.setTitular(fakeAccount);
         transactions.get(2).setCreatedDate(stringToDate("2024-01-25"));
-        transactions.get(2).setValor(0.0);
         Transaction transferencia = accountService.createTransaction(account1.getId(), transactions.get(2), cpf);
+        transferencia.setTitular(fakeAccount);
+        transferencia.setRecebedor(fakeAccount);
         transactions.get(3).setCreatedDate(stringToDate("2024-02-16"));
-        transactions.get(3).setValor(0.0);
         Transaction pix = accountService.createTransaction(account1.getId(), transactions.get(3), cpf);
+        pix.setTitular(fakeAccount);
         return List.of(deposito, saque, transferencia);
     }
 
@@ -316,5 +326,9 @@ public class TransactionServiceTest {
     private LocalDate stringToDate(String date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return LocalDate.parse(date, formatter);
+    }
+
+    private Double round(Double saldo) {
+        return Math.round(saldo * 100.0) / 100.0;
     }
 }

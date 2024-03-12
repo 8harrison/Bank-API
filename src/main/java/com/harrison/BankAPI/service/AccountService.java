@@ -17,23 +17,26 @@ import static com.harrison.BankAPI.utils.Calculator.identifier;
 public class AccountService {
 
     private final AccountRepository accountRepository;
-
-    private final TransactionRepository transactionRepository;
-
-    private final BranchRepository branchRepository;
-
-    private final PersonRepository personRepository;
     private final AddressRepository addressRepository;
+    private final BankRepository bankRepository;
+    private final BranchRepository branchRepository;
+    private final PersonRepository personRepository;
+    private final TransactionRepository transactionRepository;
 
     @Autowired
     public AccountService(AccountRepository accountRepository,
-                          TransactionRepository transactionRepository, BranchRepository branchRepository, PersonRepository personRepository,
-                          AddressRepository addressRepository) {
+                          AddressRepository addressRepository,
+                          BankRepository bankRepository,
+                          BranchRepository branchRepository,
+                          PersonRepository personRepository,
+                          TransactionRepository transactionRepository
+                          ) {
         this.accountRepository = accountRepository;
-        this.transactionRepository = transactionRepository;
+        this.addressRepository = addressRepository;
+        this.bankRepository = bankRepository;
         this.branchRepository = branchRepository;
         this.personRepository = personRepository;
-        this.addressRepository = addressRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     public Account createAccount(Account account, String branchCode) {
@@ -162,6 +165,14 @@ public class AccountService {
         return branch.get();
     }
 
+    private Bank verifyBank(Long id) {
+        Optional<Bank> optional = bankRepository.findById(id);
+        if (optional.isEmpty()){
+            throw new NotFoundException("Banco Não Encontrado!");
+        }
+        return optional.get();
+    }
+
     private String generateCode(Account account) {
         int num = account.getBranch().getAccounts().size() - 1;
         if (num >= 0) {
@@ -206,7 +217,8 @@ public class AccountService {
     }
 
     private Transaction setCode(Transaction transaction) {
-        Map<String, Account> accounts = identifier(transaction);
+        Bank bank = verifyBank(1L);
+        Map<String, Account> accounts = identifier(transaction, bank);
         String code = generateCode(transaction);
         String letter = transaction.getName().name().substring(0, 2);
         code += "-" + letter;

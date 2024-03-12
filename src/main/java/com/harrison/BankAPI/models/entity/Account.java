@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.harrison.BankAPI.utils.AccountTypes;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -14,6 +16,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "accounts")
 @EntityListeners(AuditingEntityListener.class)
@@ -73,107 +77,4 @@ public class Account {
     this.address = address;
   }
 
-  public List<Transaction> getTransactions() {
-    return transactions;
-  }
-
-  public void setTransactions(List<Transaction> transactions) {
-    this.transactions = transactions;
-  }
-
-  public String getCode() {
-    return code;
-  }
-
-  public void setCode(String code) {
-    this.code = code;
-  }
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public Person getPerson() {
-    return person;
-  }
-
-  public void setPerson(Person person) {
-    this.person = person;
-  }
-
-  public Branch getBranch() {
-    return branch;
-  }
-
-  public void setBranch(Branch branch) {
-    this.branch = branch;
-  }
-
-  public AccountTypes getName() {
-    return name;
-  }
-
-  public void setName(AccountTypes name) {
-    this.name = name;
-  }
-
-  public Double getSaldo() {
-    return saldo;
-  }
-
-  public void setSaldo(Double saldo) {
-    this.saldo = saldo;
-  }
-
-  public Address getAddress() {
-    return address;
-  }
-
-  public void setAddress(Address address) {
-    this.address = address;
-  }
-
-  public LocalDate getCreatedDate() {
-    return createdDate;
-  }
-
-  public void setCreatedDate(LocalDate createdDate) {
-    this.createdDate = createdDate;
-  }
-
-  public LocalDate getLastModifiedDate() {
-    return lastModifiedDate;
-  }
-
-  public void setLastModifiedDate(LocalDate lastModifiedDate) {
-    this.lastModifiedDate = lastModifiedDate;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-  }
-
-  public String getModifiedBy() {
-    return modifiedBy;
-  }
-
-  public void setModifiedBy(String modifiedBy) {
-    this.modifiedBy = modifiedBy;
-  }
-
-  public LocalDate getLastIncome() {
-    return lastIncome;
-  }
-
-  public void setLastIncome(LocalDate lastIncome) {
-    this.lastIncome = lastIncome;
-  }
 }

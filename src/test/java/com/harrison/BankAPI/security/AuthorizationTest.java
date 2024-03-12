@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harrison.BankAPI.mocks.MockGen;
+import com.harrison.BankAPI.utils.BankFixtures;
 import com.harrison.BankAPI.utils.SimpleResultHandler;
 import com.harrison.BankAPI.utils.TestHelpers;
 import java.nio.charset.StandardCharsets;
@@ -69,6 +70,7 @@ public class AuthorizationTest {
     MockGen manager = person_manager;
     MockGen branch = branch_1;
     managerToken = aux.createPersonAuthenticate(manager);
+    perform(BankFixtures.bankMock);
     perform(branch, post("/branches"), managerToken, CREATED);
   }
 
@@ -526,6 +528,15 @@ public class AuthorizationTest {
             .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
 
     return objectMapper.readValue(responseContent, MockGen.class);
+  }
+
+  public void perform(MockGen mockGen) throws Exception {
+    MockHttpServletRequestBuilder builder = post("/bank");
+    builder = builder.header("Authorization", "Bearer " + managerToken);
+    mockMvc.perform(builder
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectToJson(mockGen)))
+            .andExpect(status().isCreated());
   }
 
 }

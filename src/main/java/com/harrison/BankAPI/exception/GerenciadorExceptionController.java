@@ -25,7 +25,7 @@ public class GerenciadorExceptionController {
   }
 
   @ExceptionHandler({InvalidAcessException.class})
-  public ResponseEntity<String> handleInvalidAcessException(RuntimeException exception) {
+  public ResponseEntity<String> handleInvalidAccessException(RuntimeException exception) {
     return ResponseEntity
         .status(HttpStatus.FORBIDDEN)
         .body(exception.getMessage());

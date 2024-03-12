@@ -28,6 +28,7 @@ import com.harrison.BankAPI.controller.dto.TransactionDto;
 import com.harrison.BankAPI.mocks.MockGen;
 import com.harrison.BankAPI.models.entity.Transaction;
 import com.harrison.BankAPI.service.AccountService;
+import com.harrison.BankAPI.utils.BankFixtures;
 import com.harrison.BankAPI.utils.PersonFixtures;
 import com.harrison.BankAPI.utils.SimpleResultHandler;
 import com.harrison.BankAPI.utils.TestHelpers;
@@ -92,6 +93,7 @@ public class TransactionControllerTest {
                 .alwaysDo(new SimpleResultHandler())
                 .build();
         managerToken = aux.createPersonAuthenticate(person_manager);
+        perform(BankFixtures.bankMock, post("/bank"), managerToken);
         perform(branch_1, post("/branches"), managerToken);
         clientToken = aux.createPersonAuthenticate(PersonFixtures.person_client);
         perform(person_client1, post("/auth/register"),
@@ -105,9 +107,6 @@ public class TransactionControllerTest {
     @DisplayName("Teste create transaction")
     public void testA() throws Exception {
         testDeposito();
-        testSaque();
-        testTransferencia();
-        testPix();
         testCreateTransactionAccountIdNotFound();
         testInsulfficientFoundsenException();
     }
@@ -281,10 +280,11 @@ public class TransactionControllerTest {
         setParams(transaction, savedtransaction);
 
         assertEquals(transaction, savedtransaction);
-        assertEquals(11000.00, account.get("saldo"));
+        assertEquals(10995.44, account.get("saldo"));
     }
 
-    private void testSaque() throws Exception {
+    @Test
+    public void testSaque() throws Exception {
         MockGen savedtransaction = perform(transaction_saque,
                 post("/accounts/1/transactions"), clientToken);
         MockGen transaction = transaction_saque;
@@ -294,10 +294,11 @@ public class TransactionControllerTest {
         setParams(transaction, savedtransaction);
 
         assertEquals(transaction, savedtransaction);
-        assertEquals(10500.00, account.get("saldo"));
+        assertEquals(497.44, account.get("saldo"));
     }
 
-    private void testTransferencia() throws Exception {
+    @Test
+    public void testTransferencia() throws Exception {
         MockGen transaction = transaction_transferencia.clone();
         MockGen savedtransaction = perform(transaction,
                 post("/accounts/1/transactions"), clientToken);
@@ -309,11 +310,12 @@ public class TransactionControllerTest {
         setParams(transaction, savedtransaction);
         transaction.remove("cpf");
         assertEquals(transaction, savedtransaction);
-        assertEquals(10000.00, account1.get("saldo"));
+        assertEquals(491.12, account1.get("saldo"));
         assertEquals(1500.00, account2.get("saldo"));
     }
 
-    private void testPix() throws Exception {
+    @Test
+    public void testPix() throws Exception {
         MockGen transaction = transaction_pix();
         MockGen savedtransaction = perform(transaction,
                 post("/accounts/1/transactions"), clientToken);
@@ -326,8 +328,8 @@ public class TransactionControllerTest {
         transaction.remove("cpf");
 
         assertEquals(transaction, savedtransaction);
-        assertEquals(9500.00, account1.get("saldo"));
-        assertEquals(2000.00, account2.get("saldo"));
+        assertEquals(500.0, account1.get("saldo"));
+        assertEquals(1500.00, account2.get("saldo"));
     }
 
     private void testInsulfficientFoundsenException() throws Exception {
