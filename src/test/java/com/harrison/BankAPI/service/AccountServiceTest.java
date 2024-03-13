@@ -54,6 +54,7 @@ public class AccountServiceTest {
     Branch branch;
 
     Person person;
+    Bank bank;
 
     Timer timer = new Timer();
 
@@ -63,7 +64,7 @@ public class AccountServiceTest {
         branch = branchService.create(mockBranch_1());
         person = personService.register(mockPerson());
         saved = savedAccount();
-        Bank bank = new Bank();
+        bank = new Bank();
         bank.setName("PoupaBank");
         bank.setIncomeTax(0.005);
         bankService.create(bank);
@@ -79,7 +80,8 @@ public class AccountServiceTest {
     @Test
     public void testUpdateTax() throws InterruptedException {
         double tax = 0.007;
-        Bank bank = bankService.updateTax(1L, tax);
+        bank.setIncomeTax(tax);
+        Bank update = bankService.updateTax(1L, bank);
         timer(tax);
     }
 

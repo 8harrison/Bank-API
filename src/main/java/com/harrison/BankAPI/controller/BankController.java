@@ -30,7 +30,8 @@ public class BankController {
     @PutMapping("/{id}")
     @Secured({"MANAGER"})
     public ResponseEntity<Bank> updateTax(@PathVariable Long id, @RequestBody UpdateBankDto dto) {
-        Bank update = bankService.updateTax(id, dto.tax());
+        Bank bank = bankService.getById(id);
+        Bank update = bankService.updateTax(id, dto.toBank(bank));
         return ResponseEntity.ok(update);
     }
 }

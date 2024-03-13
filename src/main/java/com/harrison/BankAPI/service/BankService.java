@@ -41,9 +41,8 @@ public class BankService {
         return created;
     }
 
-    public Bank updateTax(Long id, Double tax) {
-        Bank bank = verifyBank(id);
-        bank.setIncomeTax(tax);
+    public Bank updateTax(Long id, Bank bank) {
+        Bank founded = verifyBank(id);
         return bankRepository.save(bank);
     }
 
