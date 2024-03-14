@@ -2,7 +2,7 @@
 <picture >
   <source media="(prefers-color-scheme: dark)" srcset="PoupaBank_2_-removebg-preview.png">
   <img alt="Logo PoupaBank" width=120% height=120%>
- 
+</picture>
 
 
 <div orientation="horizontal" align="center">
