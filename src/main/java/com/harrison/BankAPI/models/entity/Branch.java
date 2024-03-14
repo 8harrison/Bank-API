@@ -1,24 +1,29 @@
 package com.harrison.BankAPI.models.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "branches")
+@EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor
+@NoArgsConstructor
 public class Branch {
 
   @Id
@@ -45,60 +50,17 @@ public class Branch {
   @JsonIgnore
   private List<Account> accounts = new ArrayList<>();
 
-  public Branch() {
-  }
+  @CreatedDate
+  @JsonProperty("created_date")
+  private LocalDate createdDate;
 
-  public Branch(Long id, String name, Address address) {
-    this.id = id;
-    this.name = name;
-    this.address = address;
-  }
+  @LastModifiedDate
+  @JsonProperty("last_modified_date")
+  private LocalDate lastModifiedDate;
 
-  public List<Account> getAccounts() {
-    return accounts;
-  }
+  @CreatedBy
+  private String createdBy;
 
-  public void setAccounts(List<Account> accounts) {
-    this.accounts = accounts;
-  }
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public Address getAddress() {
-    return address;
-  }
-
-  public void setAddress(Address address) {
-    this.address = address;
-  }
-
-  public String getCode() {
-    return code;
-  }
-
-  public void setCode(String code) {
-    this.code = code;
-  }
-
-  public List<Person> getPeople() {
-    return people;
-  }
-
-  public void setPeople(List<Person> people) {
-    this.people = people;
-  }
+  @LastModifiedBy
+  private String lastModifiedBy;
 }

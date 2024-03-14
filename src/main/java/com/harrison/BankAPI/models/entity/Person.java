@@ -1,23 +1,32 @@
 package com.harrison.BankAPI.models.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.harrison.BankAPI.utils.AuthTypes;
+import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = "people")
+@EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class Person implements UserDetails {
 
   @Id
@@ -32,9 +41,13 @@ public class Person implements UserDetails {
   @Column(unique = true)
   private String cpf;
 
+  @Setter
+  @Getter
   @Column(unique = true)
   private String username;
 
+  @Setter
+  @Getter
   private String password;
 
   private String role;
@@ -46,75 +59,13 @@ public class Person implements UserDetails {
   @JsonIgnore
   private List<Branch> branches;
 
-  public Person() {
-  }
+  @CreatedDate
+  @JsonProperty("created_date")
+  private LocalDate createdDate;
 
-
-  public Person(Long id, String name, String email, String cpf, String username, String password,
-      String role, List<Branch> branches, Account account) {
-    this.id = id;
-    this.name = name;
-    this.email = email;
-    this.cpf = cpf;
-    this.username = username;
-    this.password = password;
-    this.role = role;
-    this.branches = branches;
-    this.account = account;
-  }
-
-  public List<Branch> getBranches() {
-    return branches;
-  }
-
-  public void setBranches(List<Branch> branches) {
-    this.branches = branches;
-  }
-
-  public Account getAccount() {
-    return account;
-  }
-
-  public void setAccount(Account account) {
-    this.account = account;
-  }
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public String getCpf() {
-    return cpf;
-  }
-
-
-  public void setCpf( String cpf) {
-    this.cpf = cpf;
-  }
-
-  public String getUsername() {
-    return username;
-  }
+  @LastModifiedDate
+  @JsonProperty("last_modified_date")
+  private LocalDate lastModifiedDate;
 
   @Override
   public boolean isAccountNonExpired() {
@@ -136,28 +87,9 @@ public class Person implements UserDetails {
     return true;
   }
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return List.of(new SimpleGrantedAuthority(role));
   }
 
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public String getRole() {
-    return role;
-  }
-
-  public void setRole(String role) {
-    this.role = role;
-  }
 }

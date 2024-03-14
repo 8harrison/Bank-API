@@ -4,10 +4,15 @@ import com.harrison.BankAPI.exception.ConflictUsernameException;
 import com.harrison.BankAPI.exception.InvalidCpfException;
 import com.harrison.BankAPI.exception.InvalidEmailException;
 import com.harrison.BankAPI.exception.NotFoundException;
+import com.harrison.BankAPI.models.entity.Account;
 import com.harrison.BankAPI.models.entity.Person;
+import com.harrison.BankAPI.models.repository.AccountRepository;
 import com.harrison.BankAPI.models.repository.PersonRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -95,4 +100,5 @@ public class PersonService implements UserDetailsService {
       }
     });
   }
+
 }

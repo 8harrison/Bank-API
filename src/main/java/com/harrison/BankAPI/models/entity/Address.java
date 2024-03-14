@@ -9,9 +9,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "address")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Address {
 
   @Id
@@ -34,63 +42,4 @@ public class Address {
   @JsonIgnore
   private Account account;
 
-  public Address() {
-  }
-
-  public Address(Long id, String rua, Integer numero, String cep, Account account, Branch branch) {
-    this.id = id;
-    this.rua = rua;
-    this.numero = numero;
-    this.cep = cep;
-    this.account = account;
-    this.branch = branch;
-  }
-
-  public String getRua() {
-    return rua;
-  }
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public void setRua(String rua) {
-    this.rua = rua;
-  }
-
-  public Integer getNumero() {
-    return numero;
-  }
-
-  public void setNumero(Integer numero) {
-    this.numero = numero;
-  }
-
-  public String getCep() {
-    return cep;
-  }
-
-  public void setCep(String cep) {
-    this.cep = cep;
-  }
-
-  public Branch getBranch() {
-    return branch;
-  }
-
-  public void setBranch(Branch branch) {
-    this.branch = branch;
-  }
-
-  public Account getAccount() {
-    return account;
-  }
-
-  public void setAccount(Account account) {
-    this.account = account;
-  }
 }

@@ -1,23 +1,26 @@
 package com.harrison.BankAPI.models.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.harrison.BankAPI.utils.AccountTypes;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "accounts")
+@EntityListeners(AuditingEntityListener.class)
 public class Account {
 
   @Id
@@ -33,7 +36,7 @@ public class Account {
   @JoinColumn(name = "branch_id")
   private Branch branch;
 
-  private String name;
+  private AccountTypes name;
 
   private Double saldo;
 
@@ -47,10 +50,26 @@ public class Account {
   @OneToOne(mappedBy = "account", cascade = CascadeType.ALL)
   private Address address;
 
+  @CreatedDate
+  @JsonProperty("created_date")
+  private LocalDate createdDate;
+
+  @LastModifiedDate
+  @JsonProperty("last_modified_date")
+  private LocalDate lastModifiedDate;
+
+  @CreatedBy
+  private String createdBy;
+
+  @LastModifiedBy
+  private String modifiedBy;
+
+  private LocalDate lastIncome;
+
   public Account() {
   }
 
-  public Account(Long id, Person person, String name, Double saldo, Address address) {
+  public Account(Long id, Person person, AccountTypes name, Double saldo, Address address) {
     this.id = id;
     this.person = person;
     this.name = name;
@@ -58,67 +77,4 @@ public class Account {
     this.address = address;
   }
 
-  public List<Transaction> getTransactions() {
-    return transactions;
-  }
-
-  public void setTransactions(List<Transaction> transactions) {
-    this.transactions = transactions;
-  }
-
-  public String getCode() {
-    return code;
-  }
-
-  public void setCode(String code) {
-    this.code = code;
-  }
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public Person getPerson() {
-    return person;
-  }
-
-  public void setPerson(Person person) {
-    this.person = person;
-  }
-
-  public Branch getBranch() {
-    return branch;
-  }
-
-  public void setBranch(Branch branch) {
-    this.branch = branch;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public Double getSaldo() {
-    return saldo;
-  }
-
-  public void setSaldo(Double saldo) {
-    this.saldo = saldo;
-  }
-
-  public Address getAddress() {
-    return address;
-  }
-
-  public void setAddress(Address address) {
-    this.address = address;
-  }
 }

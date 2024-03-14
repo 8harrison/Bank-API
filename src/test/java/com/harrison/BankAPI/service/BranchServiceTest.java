@@ -18,12 +18,17 @@ import com.harrison.BankAPI.utils.BranchFixtures;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Execution(ExecutionMode.CONCURRENT)
 public class BranchServiceTest {
 
   @Autowired
@@ -59,6 +64,10 @@ public class BranchServiceTest {
   private void testCreateBranch() {
     branch.setId(saved.getId());
     branch.setCode(saved.getCode());
+    branch.setCreatedDate(saved.getCreatedDate());
+    branch.setLastModifiedDate(saved.getLastModifiedDate());
+    branch.setCreatedBy(saved.getCreatedBy());
+    branch.setLastModifiedBy(saved.getLastModifiedBy());
     String response = objectToJson(saved);
     String expected = objectToJson(branch);
     assertEquals(expected, response);
@@ -69,8 +78,8 @@ public class BranchServiceTest {
 
   private void testGetById() {
     Branch founded = branchService.getById(saved.getId());
-    MockGen expected = MockGen.toMockGen(saved);
-    MockGen response = MockGen.toMockGen(founded);
+    String expected = objectToJson(saved);
+    String response = objectToJson(founded);
 
     assertEquals(expected, response);
   }
@@ -85,7 +94,6 @@ public class BranchServiceTest {
     Branch branch3 = branchService.create(mockBranch_3());
     List<Branch> branches = List.of(saved, branch2, branch3);
     List<Branch> response = branchService.getAll();
-
     assertEquals(objectToJson(branches), objectToJson(response));
   }
 

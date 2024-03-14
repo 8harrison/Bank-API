@@ -1,0 +1,35 @@
+version: "3"
+services:
+  database:
+    image: postgres:10.17
+    environment:
+      - "POSTGRES_PASSWORD=postgres"
+      - "POSTGRES_USER=postgres"
+      - "POSTGRES_DB=bankdb"
+    ports:
+      - 5432:5432
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+#      - pg-config:/etc/postgresql
+#    entrypoint: docker-entrypoint.sh -c 'config_file=/etc/postgresql/postgresql.conf'
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user-name@domain-name.com
+      PGADMIN_DEFAULT_PASSWORD: strong-password
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  pg-data:
+  pgadmin-data:
+#  pg-config:
+#    driver: local
+#    driver_opts:
+#      type: "none"
+#      o: "bind"
+#      device: "$PWD/postgres_custom"

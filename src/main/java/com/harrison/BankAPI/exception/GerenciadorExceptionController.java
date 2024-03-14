@@ -16,7 +16,7 @@ public class GerenciadorExceptionController {
         .body(exception.getMessage());
   }
 
-  @ExceptionHandler({InsulfficientFoundsException.class, InvalidTransactionException.class,
+  @ExceptionHandler({InsulfficientFoundsException.class,
       InvalidCpfException.class, InvalidEmailException.class, ConflictUsernameException.class})
   public ResponseEntity<String> handleBadRequest(RuntimeException exception) {
     return ResponseEntity
@@ -25,7 +25,7 @@ public class GerenciadorExceptionController {
   }
 
   @ExceptionHandler({InvalidAcessException.class})
-  public ResponseEntity<String> handleInvalidAcessException(RuntimeException exception) {
+  public ResponseEntity<String> handleInvalidAccessException(RuntimeException exception) {
     return ResponseEntity
         .status(HttpStatus.FORBIDDEN)
         .body(exception.getMessage());

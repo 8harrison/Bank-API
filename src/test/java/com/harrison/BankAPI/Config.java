@@ -1,10 +1,6 @@
 package com.harrison.BankAPI;
 
-import com.harrison.BankAPI.models.repository.AccountRepository;
-import com.harrison.BankAPI.models.repository.AddressRepository;
-import com.harrison.BankAPI.models.repository.BranchRepository;
-import com.harrison.BankAPI.models.repository.PersonRepository;
-import com.harrison.BankAPI.models.repository.TransactionRepository;
+import com.harrison.BankAPI.models.repository.*;
 
 import com.harrison.BankAPI.service.AccountService;
 
@@ -23,18 +19,22 @@ public class Config {
 
   @Autowired
   AccountRepository accountRepository;
-
+  @Autowired
+  AddressRepository addressRepository;
+  @Autowired
+  BankRepository bankRepository;
+  @Autowired
+  BranchRepository branchRepository;
+  @Autowired
+  PersonRepository personRepository;
   @Autowired
   TransactionRepository transactionRepository;
 
-  @Autowired
-  BranchRepository branchRepository;
 
-  @Autowired
-  PersonRepository personRepository;
 
-  @Autowired
-  AddressRepository addressRepository;
+
+
+
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -42,8 +42,8 @@ public class Config {
 
   @Bean
   public AccountService accountService() {
-    return new AccountService(accountRepository, transactionRepository, branchRepository,
-        personRepository, addressRepository);
+    return new AccountService(accountRepository, addressRepository, bankRepository,
+        branchRepository, personRepository, transactionRepository);
   }
 
   @Bean

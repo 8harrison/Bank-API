@@ -5,6 +5,8 @@ import com.harrison.BankAPI.models.entity.Address;
 import com.harrison.BankAPI.models.entity.Branch;
 import com.harrison.BankAPI.models.entity.Person;
 import com.harrison.BankAPI.models.entity.Transaction;
+import com.harrison.BankAPI.utils.AccountTypes;
+import static com.harrison.BankAPI.utils.TransactionTypes.*;
 
 public class MockFactory {
 
@@ -33,7 +35,7 @@ public class MockFactory {
   public static Account mockAccount() {
     Account account = new Account();
     account.setSaldo(1000.00);
-    account.setName("poupança");
+    account.setName(AccountTypes.POUPANCA);
     return account;
   }
 
@@ -65,28 +67,28 @@ public class MockFactory {
 
   public static Transaction mockTransaction_deposito() {
     Transaction transaction = new Transaction();
-    transaction.setName("deposito");
+    transaction.setName(DEPOSITO);
     transaction.setValor(10000.00);
     return transaction;
   }
 
   public static Transaction mockTransaction_saque() {
     Transaction transaction = new Transaction();
-    transaction.setName("saque");
+    transaction.setName(SAQUE);
     transaction.setValor(500.00);
     return transaction;
   }
 
   public static Transaction mockTransaction_transferencia() {
     Transaction transaction = new Transaction();
-    transaction.setName("transferencia");
+    transaction.setName(TED);
     transaction.setValor(500.00);
     return transaction;
   }
 
   public static Transaction mockTransaction_pix() {
     Transaction transaction = new Transaction();
-    transaction.setName("pix");
+    transaction.setName(PIX);
     transaction.setValor(500.00);
     return transaction;
   }
