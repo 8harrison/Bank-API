@@ -83,4 +83,17 @@
 
 <h2>📁 Acesso ao projeto</h2>
 Você pode acessar o código fonte do projeto inicial ou baixa-lo.
-<h2>🛠️</h2>
+<h2>🛠️ Abrir e rodar o projeto</h2>
+Após baixar o projeto, você pode abrir com o Intellij IDEA. Para isso, clique em:
+
+<ui>
+<li>Flie</li>
+<li>Open</li>
+<li>Procure o local onde o projeto está e o selecione</li>
+<li>Por fim clique em OK</li>
+<li>No terminal digite: mvn install</li>
+<li>Aguarde a instalação das dependências</li>
+<li>No terminal digite: docker-compose up -d</li>
+<li>Aguarde até o docker-compose terminar o processo</li>
+<li>Rode o projeto</li>
+</ui>
