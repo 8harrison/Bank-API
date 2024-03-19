@@ -60,3 +60,11 @@
 <h3>11. Atualização de conta:</h3>
 
 ![update_account](https://github.com/8harrison/Bank-API/assets/25964433/46a2a1c0-8fbc-4aa5-b69f-da842476c83f)
+
+<h3>12. Exclusão de conta:</h3>
+
+![delete_account](https://github.com/8harrison/Bank-API/assets/25964433/32e5312f-12d0-49a7-8831-df787abaf37a)
+
+<h3>13. Inclusão de endereço da conta:</h3>
+
+![setAddressAccount](https://github.com/8harrison/Bank-API/assets/25964433/643ce177-d013-4404-b85a-507a3fa485e7)
