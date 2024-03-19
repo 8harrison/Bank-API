@@ -97,3 +97,11 @@ Após baixar o projeto, você pode abrir com o Intellij IDEA. Para isso, clique 
 <li>Aguarde até o docker-compose terminar o processo</li>
 <li>Rode o projeto</li>
 </ui>
+
+## ✔️ Técnicas e tecnologias utilizadas
+- ``Java 17``
+- ``InteliJ IDEA``
+- ``Paradigma de orientação a objetos``
+
+  # Autor
+  [<img src="https://avatars.githubusercontent.com/8harrison" width=115/><br/><sub>Harrison Monteiro de Oliveira</sub>](https://github.com/8harrison)
