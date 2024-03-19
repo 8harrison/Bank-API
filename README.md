@@ -24,8 +24,10 @@
 
 ![login](https://github.com/8harrison/Bank-API/assets/25964433/1af5b0ae-80c6-40d5-97ff-8213ee89b00b)
 <h3>3. Busca de Pessoas: </h3>
+
 | <img src="https://github.com/8harrison/Bank-API/assets/25964433/e93b41d4-de06-4455-824f-5349827ec3d2"/> | <img src="https://github.com/8harrison/Bank-API/assets/25964433/53512724-b6a2-4c1e-af83-4a7a978b18ca"/> |
-|:---:| :---: | 
+|:---:|:---:| 
+
 <h3>4. Cadastro de Agência: </h3>
 
 ![create_branch](https://github.com/8harrison/Bank-API/assets/25964433/80b6b6c1-a5b0-4481-a55e-a5965e0ceb09)
@@ -47,4 +49,9 @@
 <h3>9. Cadastro de conta:</h3>
 
 |![create_account](https://github.com/8harrison/Bank-API/assets/25964433/d1c9186c-945b-41fd-8c62-9d7ecfb0f5a4)|![create_account_2](https://github.com/8harrison/Bank-API/assets/25964433/4ff006c1-ab79-4501-86a7-fbb301c06cdd)|
+|:---:|:---:| 
+
+<h3>10. Busca de contas:</h3>
+
+|![getAccountById](https://github.com/8harrison/Bank-API/assets/25964433/1b8864ba-0015-43a6-a221-fd6cf216061f)|![getAllAccounts](https://github.com/8harrison/Bank-API/assets/25964433/40efe4c9-a342-4d31-9b7a-99db8f623a42)|
 |:---:|:---:| 
