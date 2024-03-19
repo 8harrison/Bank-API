@@ -1,7 +1,7 @@
 <h1 align="center">Poupa Bank (API Ficticia de um Banco)</h1>
 <picture >
   <source media="(prefers-color-scheme: dark)" srcset="logo/PoupaBank_logo_blackmode.png">
-  <source media="(prefers-color-scheme: light)" srcset="logo/PoupaBank_logo_whitemode.png””" >
+  <source media="(prefers-color-scheme: light)" srcset="logo/PoupaBank_logo_whitemode.png" >
   <img alt="Logo PoupaBank" width=120% height=120%>
 </picture>
 <p><br/><br/><br/></p>
