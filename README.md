@@ -82,9 +82,9 @@
 ![deleteTransaction](https://github.com/8harrison/Bank-API/assets/25964433/44ed5f1a-b25c-49a2-bc6f-af75918f5ab9)
 
 ## 📔 Instruções:
-Na rota /accounts o name necessário a ser informado possui apenas dois valores possiveis: POUPANCA e CORRENTE
-Na rota /accounts/{id}/transactions, os valores possíveis de name são: DEPOSITO, SAQUE, TED e PIX (O DOC deixou de existir em 02/2024)
-Na rota /auth/register, os valores possíveis de name são: MANAGER, ADMIN e CLIENT
+Na rota /accounts o name necessário a ser informado possui apenas dois valores possiveis: POUPANCA e CORRENTE<br>
+Na rota /accounts/{id}/transactions, os valores possíveis de name são: DEPOSITO, SAQUE, TED e PIX (O DOC deixou de existir em 02/2024)<br>
+Na rota /auth/register, os valores possíveis de role são: MANAGER, ADMIN e CLIENT
 
 <h2>📁 Acesso ao projeto</h2>
 Você pode acessar o código fonte do projeto inicial ou baixa-lo.
