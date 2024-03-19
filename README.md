@@ -68,3 +68,16 @@
 <h3>13. Inclusão de endereço da conta:</h3>
 
 ![setAddressAccount](https://github.com/8harrison/Bank-API/assets/25964433/643ce177-d013-4404-b85a-507a3fa485e7)
+
+<h3>14. Criação de transação:</h3>
+
+![createTransaction](https://github.com/8harrison/Bank-API/assets/25964433/d396add8-112b-497b-8774-0da14ff7a1c3)
+
+<h3>15. Busca das transações: </h3>
+
+![getAllTransactions](https://github.com/8harrison/Bank-API/assets/25964433/2da252dd-f509-477a-b7ec-ae6934d240bf)
+
+<h3>16. Exclusão da transação: </h3>
+
+![deleteTransaction](https://github.com/8harrison/Bank-API/assets/25964433/44ed5f1a-b25c-49a2-bc6f-af75918f5ab9)
+
