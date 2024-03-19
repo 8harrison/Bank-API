@@ -55,3 +55,8 @@
 
 |![getAccountById](https://github.com/8harrison/Bank-API/assets/25964433/1b8864ba-0015-43a6-a221-fd6cf216061f)|![getAllAccounts](https://github.com/8harrison/Bank-API/assets/25964433/40efe4c9-a342-4d31-9b7a-99db8f623a42)|
 |:---:|:---:| 
+
+
+<h3>11. Atualização de conta:</h3>
+
+![update_account](https://github.com/8harrison/Bank-API/assets/25964433/46a2a1c0-8fbc-4aa5-b69f-da842476c83f)
