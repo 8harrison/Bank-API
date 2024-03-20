@@ -52,7 +52,7 @@ public class Person implements UserDetails {
 
   private String role;
 
-  @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+  @OneToOne(mappedBy = "person", cascade = CascadeType.ALL)
   private Account account;
 
   @ManyToMany(mappedBy = "people")

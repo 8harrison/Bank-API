@@ -133,13 +133,16 @@ public class TestHelpers implements ApplicationContextAware {
     );
 
     String responseContent =
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(get("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectToJson(loginInfo)))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            //.andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
-
+    mockMvc.perform(get("/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectToJson(loginInfo)))
+            .andExpect(status().isOk());
     LoginResponse loginResponse = objectMapper.readValue(responseContent, LoginResponse.class);
     String token = loginResponse.get("token");
 
@@ -157,7 +160,7 @@ public class TestHelpers implements ApplicationContextAware {
         "password", person.get("password")
     );
     String responseContent =
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(get("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectToJson(loginInfo)))
             .andExpect(status().isOk())

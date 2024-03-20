@@ -93,10 +93,11 @@ public class AccountController {
 
     @PutMapping("/{id}")
     @Secured({"ADMIN", "MANAGER"})
-    public ResponseEntity<AccountDto> update(@RequestBody AccountDto dto, @PathVariable Long id) {
-        String branchCode = dto.code().split("-")[0];
+    public ResponseEntity<AccountDto> update(@RequestBody CreationAccountDto dto, @PathVariable Long id) {
+        String branchCode = dto.branchCode();
         Branch branch = branchService.getByCode(branchCode);
-        Account account = accountService.updateAccount(id, toAccount(dto, branch));
+        Person person = personService.getByCpf(dto.cpf());
+        Account account = accountService.updateAccount(id, CreationAccountDto.toAccount(dto, branch, person));
         return ResponseEntity.ok(toDto(account));
     }
 

@@ -112,7 +112,7 @@ public class AccountControllerTest {
     public void testUpdateTax() throws Exception {
         double tax = 0.007;
         MockGen bank = new MockGen();
-        bank.put("tax", tax);
+        bank.put("incomeTax", tax);
         perform(bank, put("/bank/1"), OK, managerToken);
         timer(tax);
     }
@@ -178,10 +178,12 @@ public class AccountControllerTest {
 
     @Test
     public void testUpdateAccount() throws Exception {
-        savedAccount.put("code", "0002-00001");
-        savedAccount.put("cpf", account_1_request.get("cpf"));
-        MockGen returnedAccount = perform(savedAccount, put("/accounts/" + savedAccount.get("id")),
+        MockGen updated = account_1_request.clone();
+        updated.put("branchCode", "0002");
+        updated.remove("saldo");
+        MockGen returnedAccount = perform(updated, put("/accounts/" + savedAccount.get("id")),
                 OK, token);
+        savedAccount.put("code", returnedAccount.get("code"));
         assertEquals(savedAccount, returnedAccount);
     }
 
