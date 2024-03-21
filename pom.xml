@@ -130,7 +130,7 @@
                                 <exclude>**/BankApiApplication.*</exclude>
                                 <exclude>**/service/BankService</exclude>
                                 <exclude>**/controller/BankController</exclude>
-                                <exclude>**/controller/dto/UpdateBankDto</exclude>
+                                <exclude>**/controller/dto/UpdateBankDto.*</exclude>
                             </excludes>
                             <rules>
                                 <rule>
