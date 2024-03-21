@@ -13,6 +13,8 @@ public class AuditorAwareUser implements AuditorAware<String> {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) {
             return Optional.of("unknown");
+        } else if (auth.getPrincipal() instanceof String) {
+            return Optional.of("unknown");
         }
         Person auditor = (Person) auth.getPrincipal();
         return Optional.of(auditor.getUsername());

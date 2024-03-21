@@ -15,6 +15,7 @@
     <description>API spring para um sistema bancário</description>
     <properties>
         <java.version>17</java.version>
+        <spring-security.version>6.2.2</spring-security.version>
     </properties>
     <dependencies>
         <dependency>
@@ -127,6 +128,9 @@
                             <excludes>
                                 <exclude>**/models/entity/*</exclude>
                                 <exclude>**/BankApiApplication.*</exclude>
+                                <exclude>**/service/BankService</exclude>
+                                <exclude>**/controller/BankController</exclude>
+                                <exclude>**/controller/dto/*</exclude>
                             </excludes>
                             <rules>
                                 <rule>

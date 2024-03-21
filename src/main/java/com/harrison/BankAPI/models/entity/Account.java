@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.harrison.BankAPI.utils.AccountTypes;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -19,6 +21,8 @@ import java.util.List;
 @Setter
 @Getter
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "accounts")
 @EntityListeners(AuditingEntityListener.class)
 public class Account {
@@ -65,16 +69,5 @@ public class Account {
   private String modifiedBy;
 
   private LocalDate lastIncome;
-
-  public Account() {
-  }
-
-  public Account(Long id, Person person, AccountTypes name, Double saldo, Address address) {
-    this.id = id;
-    this.person = person;
-    this.name = name;
-    this.saldo = saldo;
-    this.address = address;
-  }
 
 }

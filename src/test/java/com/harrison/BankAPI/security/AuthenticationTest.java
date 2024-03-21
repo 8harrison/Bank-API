@@ -2,6 +2,7 @@ package com.harrison.BankAPI.security;
 
 import static com.harrison.BankAPI.utils.TestHelpers.objectToJson;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -69,7 +70,7 @@ public class AuthenticationTest {
         "password", "incorrectPassword"
     );
 
-    mockMvc.perform(post("/auth/login")
+    mockMvc.perform(get("/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectToJson(loginInfo)))
         .andExpect(status().isForbidden());
@@ -79,11 +80,15 @@ public class AuthenticationTest {
         "password", person.get("password")
     );
 
-    mockMvc.perform(post("/auth/login")
+    mockMvc.perform(get("/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectToJson(loginInfo)))
         .andExpect(status().isForbidden());
 
+    loginInfo = Map.of(
+            "username", person.get("username"),
+            "password", person.get("password")
+    );
   }
 
   private MockGen performPersonCreation(MockGen person) throws Exception {

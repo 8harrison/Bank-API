@@ -65,11 +65,14 @@ public class AccountService {
         Account founded = verifyAccount(id);
         account.setCreatedDate(founded.getCreatedDate());
         account.setCreatedBy(founded.getCreatedBy());
-        account.setPerson(founded.getPerson());
         Branch branch = verifyBranch(branchCode);
+        account.setCode(founded.getCode());
+        account.setSaldo(founded.getSaldo());
+        account.setId(id);
         branch.getAccounts().add(account);
+        account.setPerson(founded.getPerson());
         branchRepository.save(branch);
-        return accountRepository.save(account);
+        return setCode(account, branchCode);
     }
 
     public String deleteAccount(Long id) {
@@ -208,12 +211,13 @@ public class AccountService {
 
     private Account setCode(Account account, String branchCode) {
         verifyPerson(account.getPerson().getId());
+        Account created = accountRepository.save(account);
         Branch branch = verifyBranch(branchCode);
-        account.setBranch(branch);
+        created.setBranch(branch);
         String code = generateCode(account);
         code = account.getBranch().getCode() + "-" + code;
-        account.setCode(code);
-        return accountRepository.save(account);
+        created.setCode(code);
+        return accountRepository.save(created);
     }
 
     private Transaction setCode(Transaction transaction) {

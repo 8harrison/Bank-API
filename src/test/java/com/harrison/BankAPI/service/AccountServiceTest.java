@@ -73,7 +73,7 @@ public class AccountServiceTest {
     @Test
     public void testCreateAccount() throws InterruptedException {
         setParams();
-        assertEquals(account, saved);
+        assertEquals(objectToJson(account), objectToJson(saved));
         timer(0.005);
     }
 
@@ -176,7 +176,7 @@ public class AccountServiceTest {
         founded.getPerson().setEmail("moacir.antunes@gmail.com");
         founded.getPerson().setUsername("moacirantunes");
         Account updated = accountService.updateAccount(saved.getId(), founded);
-
+        founded.setCode(updated.getCode());
         String expected = objectToJson(founded);
         String response = objectToJson(updated);
 

@@ -1,6 +1,7 @@
 package com.harrison.BankAPI.security;
 
 import static com.harrison.BankAPI.utils.AccountFixtures.account_1_request;
+import static com.harrison.BankAPI.utils.AccountFixtures.account_2_request;
 import static com.harrison.BankAPI.utils.AddressFixtures.*;
 import static com.harrison.BankAPI.utils.BranchFixtures.*;
 import static com.harrison.BankAPI.utils.PersonFixtures.*;
@@ -159,13 +160,15 @@ public class AuthorizationTest {
 
   @Test
   void testAccountAuthorizationUpdate() throws Exception {
-    MockGen account = insertPersonInAccount(person_client1);
-    MockGen created = perform(account, post("/accounts"), adminToken, CREATED);
+    MockGen updated = account_2_request.clone();
+    MockGen person = person_client1.clone();
+    aux.performCreation(person, "/auth/register");
+    MockGen created = perform(updated, post("/accounts"), adminToken, CREATED);
     String url = "/accounts/" + created.get("id");
 
     created.put("email", "pit.moacir@yahool.com");
 
-    String json = objectToJson(created);
+    String json = objectToJson(updated);
 
     String token = null;
 
